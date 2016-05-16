@@ -18,8 +18,15 @@ CaloTowerFromL1TCreatorForTauHLT::CaloTowerFromL1TCreatorForTauHLT(const edm::Pa
     mCone(p.getParameter<double>("UseTowersInCone")),
     mConeSquare(mCone * mCone),
     mEtThreshold(p.getParameter<double>("minimumEt")),
-    mEThreshold(p.getParameter<double>("minimumE"))
+    mEThreshold(p.getParameter<double>("minimumE")),
+    legacyMode(p.exists("TauId"))
 {
+    if(legacyMode) {
+        selectedTauId = p.getParameter<int>("TauId");
+        produces<CaloTowerCollection>();
+        return;
+    }
+
     for(size_t tauId = 0; tauId < NumberOfTauIndexes; ++tauId)
         produces<CaloTowerCollection>(GetCollectionName(tauId));
 }
@@ -28,6 +35,17 @@ void CaloTowerFromL1TCreatorForTauHLT::produce(edm::StreamID sid, edm::Event& ev
 {
     TowerCollectionList tauTowers;
     splitTowerCollection(evt, tauTowers);
+
+    if(legacyMode) {
+        if(selectedTauId >= tauTowers.size()) {
+            evt.put(TowerCollectionPtr( new CaloTowerCollection ));
+        } else {
+            auto iter = tauTowers.begin();
+            std::advance(iter, selectedTauId);
+            evt.put(TowerCollectionPtr(std::move(*iter)));
+        }
+        return;
+    }
 
     size_t tauId = 0;
     for(auto& cands : tauTowers)
@@ -85,6 +103,10 @@ void CaloTowerFromL1TCreatorForTauHLT::fillDescriptions( edm::ConfigurationDescr
     aDesc.add<double>("minimumE", 0.8)->setComment("Minimum tower energy");
     aDesc.add<double>("minimumEt", 0.5)->setComment("Minimum tower ET");
     aDesc.add<int>("BX", 0)->setComment("Set bunch crossing; 0 = in time, -1 = previous, 1 = following");
+
+    // Legacy
+    aDesc.add<int>("TauId", 0)->setComment("Procude output only for the one selected L1 tau");
+    aDesc.addUntracked<int>("verbose", 0)->setComment("Verbosity level");
 
     desc.add("CaloTowerFromL1TCreatorForTauHLT", aDesc);
     desc.setComment("Produce tower collection around L1 particle seed.");

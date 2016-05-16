@@ -43,6 +43,8 @@ private:
     const double mCone, mConeSquare;
     const double mEtThreshold;
     const double mEThreshold;
+    size_t selectedTauId;
+    bool legacyMode;
 };
 
 #endif
