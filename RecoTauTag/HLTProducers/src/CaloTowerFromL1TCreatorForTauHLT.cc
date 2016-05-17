@@ -19,43 +19,12 @@ CaloTowerFromL1TCreatorForTauHLT::CaloTowerFromL1TCreatorForTauHLT(const edm::Pa
     mConeSquare(mCone * mCone),
     mEtThreshold(p.getParameter<double>("minimumEt")),
     mEThreshold(p.getParameter<double>("minimumE")),
-    selectedTauId(p.getParameter<int>("TauId")),
-    legacyMode(selectedTauId > 0)
+    selectedTauId(p.getParameter<int>("TauId"))
 {
-    if(legacyMode) {
-        produces<CaloTowerCollection>();
-        return;
-    }
-
-    for(size_t tauId = 0; tauId < NumberOfTauIndexes; ++tauId)
-        produces<CaloTowerCollection>(GetCollectionName(tauId));
+    produces<CaloTowerCollection>();
 }
 
-void CaloTowerFromL1TCreatorForTauHLT::produce(edm::StreamID sid, edm::Event& evt, const edm::EventSetup& stp) const
-{
-    TowerCollectionList tauTowers;
-    splitTowerCollection(evt, tauTowers);
-
-    if(legacyMode) {
-        if(size_t(selectedTauId) >= tauTowers.size()) {
-            evt.put(TowerCollectionPtr( new CaloTowerCollection ));
-        } else {
-            auto iter = tauTowers.begin();
-            std::advance(iter, selectedTauId);
-            evt.put(TowerCollectionPtr(std::move(*iter)));
-        }
-        return;
-    }
-
-    size_t tauId = 0;
-    for(auto& cands : tauTowers)
-        evt.put(std::move(cands), GetCollectionName(tauId++));
-
-    for(; tauId < NumberOfTauIndexes; ++tauId)
-        evt.put(TowerCollectionPtr( new CaloTowerCollection ), GetCollectionName(tauId));
-}
-
-void CaloTowerFromL1TCreatorForTauHLT::splitTowerCollection(const edm::Event& evt, TowerCollectionList& tauTowers) const
+void CaloTowerFromL1TCreatorForTauHLT::produce(edm::StreamID, edm::Event& evt, const edm::EventSetup&) const
 {
     edm::Handle<CaloTowerCollection> h_caloTowers;
     evt.getByToken(mtowers_token, h_caloTowers);
@@ -73,24 +42,18 @@ void CaloTowerFromL1TCreatorForTauHLT::splitTowerCollection(const edm::Event& ev
     }
     const auto& jetsgen = *h_jetsgen;
 
-    for (auto l1Jet = jetsgen.begin(mBX); l1Jet != jetsgen.end(mBX); ++l1Jet) {
-        TowerCollectionPtr towers( new CaloTowerCollection );
+    std::unique_ptr<CaloTowerCollection> towers(new CaloTowerCollection);
+    int n = 0;
+    for (auto l1Jet = jetsgen.begin(mBX); l1Jet != jetsgen.end(mBX); ++l1Jet, ++n) {
+        if(selectedTauId >= 0 && selectedTauId != n) continue;
         for(const auto& tower : caloTowers) {
             if(tower.et() < mEtThreshold || tower.energy() < mEThreshold) continue;
             const double deltaR2  = ROOT::Math::VectorUtil::DeltaR2(l1Jet->polarP4(), tower.polarP4());
             if(deltaR2 < mConeSquare)
                 towers->push_back(tower);
         }
-        tauTowers.push_back(std::move(towers));
     }
-}
-
-std::string CaloTowerFromL1TCreatorForTauHLT::GetCollectionName(size_t tauId)
-{
-    static const std::string NamePrefix = "Tau";
-    std::ostringstream s_name;
-    s_name << NamePrefix << tauId;
-    return s_name.str();
+    evt.put(std::move(towers));
 }
 
 void CaloTowerFromL1TCreatorForTauHLT::fillDescriptions( edm::ConfigurationDescriptions & desc )
