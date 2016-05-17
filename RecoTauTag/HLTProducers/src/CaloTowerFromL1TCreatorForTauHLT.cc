@@ -19,10 +19,10 @@ CaloTowerFromL1TCreatorForTauHLT::CaloTowerFromL1TCreatorForTauHLT(const edm::Pa
     mConeSquare(mCone * mCone),
     mEtThreshold(p.getParameter<double>("minimumEt")),
     mEThreshold(p.getParameter<double>("minimumE")),
-    legacyMode(p.exists("TauId"))
+    selectedTauId(p.getParameter<int>("TauId")),
+    legacyMode(selectedTauId > 0)
 {
     if(legacyMode) {
-        selectedTauId = p.getParameter<int>("TauId");
         produces<CaloTowerCollection>();
         return;
     }
@@ -37,7 +37,7 @@ void CaloTowerFromL1TCreatorForTauHLT::produce(edm::StreamID sid, edm::Event& ev
     splitTowerCollection(evt, tauTowers);
 
     if(legacyMode) {
-        if(selectedTauId >= tauTowers.size()) {
+        if(size_t(selectedTauId) >= tauTowers.size()) {
             evt.put(TowerCollectionPtr( new CaloTowerCollection ));
         } else {
             auto iter = tauTowers.begin();
@@ -105,7 +105,7 @@ void CaloTowerFromL1TCreatorForTauHLT::fillDescriptions( edm::ConfigurationDescr
     aDesc.add<int>("BX", 0)->setComment("Set bunch crossing; 0 = in time, -1 = previous, 1 = following");
 
     // Legacy
-    aDesc.add<int>("TauId", 0)->setComment("Procude output only for the one selected L1 tau");
+    aDesc.add<int>("TauId", -1)->setComment("Procude output only for the one selected L1 tau");
     aDesc.addUntracked<int>("verbose", 0)->setComment("Verbosity level");
 
     desc.add("CaloTowerFromL1TCreatorForTauHLT", aDesc);

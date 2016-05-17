@@ -25,7 +25,7 @@
 class CaloTowerFromL1TCreatorForTauHLT : public edm::global::EDProducer<> {
 public:
     CaloTowerFromL1TCreatorForTauHLT(const edm::ParameterSet&);
-    void produce(edm::StreamID sid, edm::Event& evt, const edm::EventSetup& stp) const override;
+    virtual void produce(edm::StreamID sid, edm::Event& evt, const edm::EventSetup& stp) const override;
     static void fillDescriptions( edm::ConfigurationDescriptions& desc );
 
 private:
@@ -43,8 +43,8 @@ private:
     const double mCone, mConeSquare;
     const double mEtThreshold;
     const double mEThreshold;
-    size_t selectedTauId;
-    bool legacyMode;
+    const int selectedTauId;
+    const bool legacyMode;
 };
 
 #endif
