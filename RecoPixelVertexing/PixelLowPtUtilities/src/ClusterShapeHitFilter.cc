@@ -300,7 +300,7 @@ bool ClusterShapeHitFilter::getSizes
 bool ClusterShapeHitFilter::isCompatible
   (const SiPixelRecHit & recHit, const LocalVector & ldir,
    const SiPixelClusterShapeCache& clusterShapeCache,
-		    PixelData const * ipd) const
+            PixelData const * ipd, const ExtendedResult *outEx) const
 {
  // Get detector
   if (cutOnPixelCharge_ && (!checkClusterCharge(recHit.geographicalId(), *(recHit.cluster()), ldir))) return false;
@@ -330,14 +330,14 @@ bool ClusterShapeHitFilter::isCompatible
 bool ClusterShapeHitFilter::isCompatible
   (const SiPixelRecHit & recHit, const GlobalVector & gdir,
    const SiPixelClusterShapeCache& clusterShapeCache,
-		    PixelData const * ipd) const
+            PixelData const * ipd, const ExtendedResult *outEx) const
 {
  // Get detector
   const PixelData & pd = getpd(recHit,ipd);
 
   LocalVector ldir =pd.det->toLocal(gdir);
 
-  return isCompatible(recHit, ldir, clusterShapeCache, &pd);
+  return isCompatible(recHit, ldir, clusterShapeCache, &pd, outEx);
 }
 
 

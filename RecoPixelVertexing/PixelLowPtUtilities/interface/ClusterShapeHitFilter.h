@@ -163,6 +163,35 @@ class ClusterShapeHitFilter
 
   };
 
+  template<typename T>
+  using Quantity2D = std::array<T, 2>;
+
+  struct Limit2D {
+      Quantity2D<float> low, high;
+  };
+
+  struct LimitResult {
+      unsigned limitKey;
+      bool limitKeyValid;
+      bool predInsideLimits;
+      std::array<Limit2D, 2> limits;
+  };
+
+  struct ExtendedResult {
+      bool compatible = false;
+      GlobalVector globalDir;
+      LocalVector localPos, localDir;
+      DetId detId;
+      bool isStraight = false, isComplete = false, hasBigPixelsOnlyInside = false, usable = false;
+      unsigned part = 0;
+      Quantity2D<float> drift;
+      Quantity2D<float> cotangent;
+      Quantity2D<float> pred;
+      std::vector<Quantity2D<int>> clusterSizes;
+      std::vector<LimitResult> limits;
+      bool hasPredInsideLimits = false, hasValidKey = false;
+  };
+
   typedef TrajectoryFilter::Record Record;
   //  typedef CkfComponentsRecord Record;
 
@@ -182,20 +211,19 @@ class ClusterShapeHitFilter
     cutOnPixelCharge_ = cutOnPixelCharge; minGoodPixelCharge_= minGoodPixelCharge;
     cutOnStripCharge_ = cutOnStripCharge; minGoodStripCharge_= minGoodStripCharge; } 
 
-  bool getSizes
-  (const SiPixelRecHit & recHit, const LocalVector & ldir,
-   const SiPixelClusterShapeCache& clusterShapeCache,
-   int & part, ClusterData::ArrayType& meas,
-   std::pair<float,float> & predr,
-   PixelData const * pd=nullptr) const;
+  bool getSizes(const SiPixelRecHit & recHit, const LocalVector & ldir,
+                const SiPixelClusterShapeCache& clusterShapeCache,
+                int & part, ClusterData::ArrayType& meas,
+                std::pair<float,float> & predr,
+                PixelData const * pd=nullptr) const;
   bool isCompatible(const SiPixelRecHit   & recHit,
                     const LocalVector & ldir,
                     const SiPixelClusterShapeCache& clusterShapeCache,
-		    PixelData const * pd=nullptr) const;
+            const PixelData *pd = nullptr, const ExtendedResult* outEx = nullptr) const;
   bool isCompatible(const SiPixelRecHit   & recHit,
                     const GlobalVector & gdir,
                     const SiPixelClusterShapeCache& clusterShapeCache,
-		    PixelData const * pd=nullptr ) const;
+            const PixelData *pd = nullptr, const ExtendedResult* outEx = nullptr) const;
 
 
   bool getSizes(DetId detId, const SiStripCluster & cluster, const LocalPoint &lpos, const LocalVector & ldir,
@@ -234,11 +262,11 @@ class ClusterShapeHitFilter
                     const GlobalPoint  & gpos,
                     const GlobalVector & gdir ) const {
             return isCompatible(recHit.geographicalId(), recHit.stripCluster(), gpos, gdir);
-  } 
+  }
   bool isCompatible(const SiStripRecHit2D & recHit,
                     const GlobalVector & gdir ) const {
             return isCompatible(recHit.geographicalId(), recHit.stripCluster(), gdir);
-  } 
+  }
 
 
 

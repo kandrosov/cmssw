@@ -118,7 +118,7 @@ void LowPtClusterShapeSeedComparitor::init(const edm::Event& e, const edm::Event
   e.getByToken(thePixelClusterShapeCacheToken, thePixelClusterShapeCache);
 }
 
-bool LowPtClusterShapeSeedComparitor::compatible(const SeedingHitSet &hits) const
+bool LowPtClusterShapeSeedComparitor::compatibleEx(const SeedingHitSet &hits, ExtendedResult* outEx) const
 //(const reco::Track* track, const vector<const TrackingRecHit *> & recHits) const
 {
   assert(hits.size()==3);
