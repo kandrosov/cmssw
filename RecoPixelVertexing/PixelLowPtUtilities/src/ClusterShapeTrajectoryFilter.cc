@@ -46,7 +46,7 @@ ClusterShapeTrajectoryFilter::~ClusterShapeTrajectoryFilter()
 }
 
 void ClusterShapeTrajectoryFilter::setEvent(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-  edm::ESHandle<ClusterShapeHitFilter> shape;
+  edm::ESHandle<cluster_shape::ClusterShapeHitFilter> shape;
   iSetup.get<TrajectoryFilter::Record>().get("ClusterShapeHitFilter", shape);
   theFilter = shape.product();
 

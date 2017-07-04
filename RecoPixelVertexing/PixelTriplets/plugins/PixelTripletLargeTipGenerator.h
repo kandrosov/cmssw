@@ -34,12 +34,22 @@ public:
                             const SeedingLayerSetsHits::SeedingLayerSet& pairLayers,
                             const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers) override;
 
-  void hitTriplets(const TrackingRegion& region, OrderedHitTriplets& trs,
+  virtual void hitTriplets(const TrackingRegion& region, OrderedHitTriplets& trs,
                    const edm::Event& ev, const edm::EventSetup& es,
                    const HitDoublets& doublets,
                    const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers,
                    std::vector<int> *tripletLastLayerIndex,
-                   LayerCacheType& layerCache);
+                   LayerCacheType& layerCache) override;
+
+  virtual void hitTriplets(const TrackingRegion& region, OrderedHitTriplets& trs,
+                           const edm::Event& ev, const edm::EventSetup& es, const HitDoublets& doublets,
+                           const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers,
+                           std::vector<int> *tripletLastLayerIndex, LayerCacheType& layerCache,
+                           LowPtClusterShapeSeedComparitor::ExtendedResultCollection* outEx) override
+  {
+      hitTriplets(region, trs, ev, es, doublets, thirdLayers, tripletLastLayerIndex, layerCache);
+  }
+
 
   void hitTriplets(
 		   const TrackingRegion& region, 

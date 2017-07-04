@@ -12,7 +12,7 @@ class GlobalTrackingGeometry;
 class MagneticField;
 class SiPixelLorentzAngle;
 class SiStripLorentzAngle;
-class ClusterShapeHitFilter;
+namespace cluster_shape { class ClusterShapeHitFilter; }
 class SiPixelClusterShapeCache;
 
 class ClusterShapeTrajectoryFilter : public TrajectoryFilter {
@@ -34,7 +34,7 @@ class ClusterShapeTrajectoryFilter : public TrajectoryFilter {
  private:
   edm::EDGetTokenT<SiPixelClusterShapeCache> theCacheToken;
   const SiPixelClusterShapeCache *theCache;
-  const ClusterShapeHitFilter * theFilter;
+  const cluster_shape::ClusterShapeHitFilter * theFilter;
 };
 
 #endif

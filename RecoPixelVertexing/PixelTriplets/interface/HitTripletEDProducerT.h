@@ -16,6 +16,7 @@
 #include "RecoPixelVertexing/PixelTriplets/interface/OrderedHitTriplets.h"
 #include "RecoPixelVertexing/PixelTriplets/interface/IntermediateHitTriplets.h"
 #include "RecoPixelVertexing/PixelTriplets/interface/LayerTriplets.h"
+#include "RecoPixelVertexing/PixelLowPtUtilities/interface/LowPtClusterShapeSeedComparitor.h"
 
 namespace hitTripletEDProducerT { class ImplBase; }
 
@@ -41,7 +42,7 @@ namespace hitTripletEDProducerT {
     ImplBase() = default;
     virtual ~ImplBase() = default;
 
-    virtual void produces(edm::ProducerBase& producer) const = 0;
+    virtual void produces(edm::ProducerBase& producer, bool debug = false) const = 0;
     virtual void produce(const IntermediateHitDoublets& regionDoublets,
                          edm::Event& iEvent, const edm::EventSetup& iSetup) = 0;
 
@@ -67,14 +68,18 @@ namespace hitTripletEDProducerT {
             typename T_SeedingHitSets, typename T_IntermediateHitTriplets>
   class Impl: public ImplGeneratorBase<T_HitTripletGenerator> {
   public:
+    mutable bool debug = false;
     Impl(const edm::ParameterSet& iConfig, edm::ConsumesCollector& iC):
       ImplGeneratorBase<T_HitTripletGenerator>(iConfig, iC) {}
     ~Impl() = default;
 
-    void produces(edm::ProducerBase& producer) const override {
+    void produces(edm::ProducerBase& producer, bool _debug) const override {
       T_SeedingHitSets::produces(producer);
       T_IntermediateHitTriplets::produces(producer);
-    };
+      debug = _debug;
+      if(debug)
+          producer.produces<LowPtClusterShapeSeedComparitor::ExtendedResultCollection>("debug");
+    }
 
     void produce(const IntermediateHitDoublets& regionDoublets,
                  edm::Event& iEvent, const edm::EventSetup& iSetup) override {
@@ -98,6 +103,9 @@ namespace hitTripletEDProducerT {
       OrderedHitTriplets triplets;
       triplets.reserve(this->localRA_.upper());
       size_t triplets_total = 0;
+      std::unique_ptr<LowPtClusterShapeSeedComparitor::ExtendedResultCollection> outEx;
+      if(debug)
+          outEx = std::make_unique<LowPtClusterShapeSeedComparitor::ExtendedResultCollection>();
 
       LogDebug("HitTripletEDProducer") << "Creating triplets for " << regionDoublets.regionSize() << " regions, and " << trilayers.size() << " pair+3rd layers from " << regionDoublets.layerPairsSize() << " layer pairs";
 
@@ -134,7 +142,8 @@ namespace hitTripletEDProducerT {
           const auto& thirdLayers = found->second;
 
           this->generator_.hitTriplets(region, triplets, iEvent, iSetup, layerPair.doublets(), thirdLayers,
-                                       intermediateHitTripletsProducer.tripletLastLayerIndexVector(), hitCache);
+                                       intermediateHitTripletsProducer.tripletLastLayerIndexVector(), hitCache,
+                                       outEx.get());
 
 #ifdef EDM_ML_DEBUG
           LogTrace("HitTripletEDProducer") << "  created " << triplets.size() << " triplets for layer pair " << layerPair.innerLayerIndex() << "," << layerPair.outerLayerIndex() << " and 3rd layers";
@@ -154,6 +163,9 @@ namespace hitTripletEDProducerT {
 
       seedingHitSetsProducer.put(iEvent);
       intermediateHitTripletsProducer.put(iEvent);
+      if(debug) {
+          iEvent.put(std::move(outEx), "debug");
+      }
     }
   };
 
@@ -294,6 +306,7 @@ HitTripletEDProducerT<T_HitTripletGenerator>::HitTripletEDProducerT(const edm::P
 {
   const bool produceSeedingHitSets = iConfig.getParameter<bool>("produceSeedingHitSets");
   const bool produceIntermediateHitTriplets = iConfig.getParameter<bool>("produceIntermediateHitTriplets");
+  const bool debug = iConfig.exists("debug") && iConfig.getParameter<bool>("debug");
 
   auto iC = consumesCollector();
 
@@ -308,7 +321,7 @@ HitTripletEDProducerT<T_HitTripletGenerator>::HitTripletEDProducerT(const edm::P
   else
     throw cms::Exception("Configuration") << "HitTripletEDProducerT requires either produceIntermediateHitTriplets or produceSeedingHitSets to be True. If neither are needed, just remove this module from your sequence/path as it doesn't do anything useful";
 
-  impl_->produces(*this);
+  impl_->produces(*this, debug);
 }
 
 template <typename T_HitTripletGenerator>
@@ -318,6 +331,7 @@ void HitTripletEDProducerT<T_HitTripletGenerator>::fillDescriptions(edm::Configu
   desc.add<edm::InputTag>("doublets", edm::InputTag("hitPairEDProducer"));
   desc.add<bool>("produceSeedingHitSets", false);
   desc.add<bool>("produceIntermediateHitTriplets", false);
+  desc.add<bool>("debug", false);
 
   T_HitTripletGenerator::fillDescriptions(desc);
 

@@ -1,4 +1,7 @@
 <lcgdict>
   <class name="IntermediateHitTriplets" persistent="false"/>
   <class name="edm::Wrapper<IntermediateHitTriplets>" persistent="false"/>
+  <class name="LowPtClusterShapeSeedComparitor::ExtendedResult" persistent="false"/>
+  <class name="LowPtClusterShapeSeedComparitor::ExtendedResultCollection" persistent="false"/>
+  <class name="edm::Wrapper<LowPtClusterShapeSeedComparitor::ExtendedResultCollection>" persistent="false"/>
 </lcgdict>

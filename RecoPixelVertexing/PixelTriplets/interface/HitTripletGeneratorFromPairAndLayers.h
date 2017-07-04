@@ -11,6 +11,7 @@
 #include <vector>
 #include "TrackingTools/TransientTrackingRecHit/interface/SeedingLayerSetsHits.h"
 #include "RecoTracker/TkHitPairs/interface/LayerHitMapCache.h"
+#include "RecoPixelVertexing/PixelLowPtUtilities/interface/LowPtClusterShapeSeedComparitor.h"
 
 namespace edm { class ParameterSet; class Event; class EventSetup; class ConsumesCollector; class ParameterSetDescription;}
 class TrackingRegion;
@@ -36,14 +37,42 @@ public:
                             const SeedingLayerSetsHits::SeedingLayerSet& pairLayers,
                             const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers) = 0;
 
-    virtual void hitTriplets(
-	const TrackingRegion& region, 
-	OrderedHitTriplets & result,
-	const edm::EventSetup & es,
-	const HitDoublets & doublets,
-	const RecHitsSortedInPhi ** thirdHitMap,
-	const std::vector<const DetLayer *> & thirdLayerDetLayer,
-	const int nThirdLayers)=0;
+  virtual void hitTriplets( const TrackingRegion& region, OrderedHitTriplets & trs,
+                            const edm::Event & ev, const edm::EventSetup& es,
+                            const SeedingLayerSetsHits::SeedingLayerSet& pairLayers,
+                            const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers,
+                            LowPtClusterShapeSeedComparitor::ExtendedResultCollection* outEx)
+  {
+      hitTriplets(region, trs, ev, es, pairLayers, thirdLayers);
+  }
+
+  virtual void hitTriplets(const TrackingRegion& region, OrderedHitTriplets & result, const edm::EventSetup & es,
+                           const HitDoublets & doublets, const RecHitsSortedInPhi ** thirdHitMap,
+                           const std::vector<const DetLayer *> & thirdLayerDetLayer,
+                           const int nThirdLayers)=0;
+
+  virtual void hitTriplets(const TrackingRegion& region, OrderedHitTriplets & result, const edm::EventSetup & es,
+                           const HitDoublets & doublets, const RecHitsSortedInPhi ** thirdHitMap,
+                           const std::vector<const DetLayer *> & thirdLayerDetLayer,
+                           const int nThirdLayers, LowPtClusterShapeSeedComparitor::ExtendedResultCollection* outEx)
+  {
+      hitTriplets(region, result, es, doublets, thirdHitMap, thirdLayerDetLayer, nThirdLayers);
+  }
+
+  virtual void hitTriplets(const TrackingRegion& region, OrderedHitTriplets& trs,
+                           const edm::Event& ev, const edm::EventSetup& es, const HitDoublets& doublets,
+                           const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers,
+                           std::vector<int> *tripletLastLayerIndex, LayerCacheType& layerCache) {}
+
+  virtual void hitTriplets(const TrackingRegion& region, OrderedHitTriplets& trs,
+                           const edm::Event& ev, const edm::EventSetup& es, const HitDoublets& doublets,
+                           const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers,
+                           std::vector<int> *tripletLastLayerIndex, LayerCacheType& layerCache,
+                           LowPtClusterShapeSeedComparitor::ExtendedResultCollection* outEx)
+  {
+      hitTriplets(region, trs, ev, es, doublets, thirdLayers, tripletLastLayerIndex, layerCache);
+  }
+
 
 protected:
   std::unique_ptr<HitPairGeneratorFromLayerPair> thePairGenerator;

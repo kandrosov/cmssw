@@ -21,36 +21,24 @@
 //
 //
 
-
-// system include files
-#include <memory>
-
-// user include files
 #include "FWCore/Framework/interface/ModuleFactory.h"
 #include "FWCore/Framework/interface/ESProducer.h"
-
 #include "FWCore/Framework/interface/ESHandle.h"
-
 #include "RecoPixelVertexing/PixelLowPtUtilities/interface/ClusterShapeHitFilter.h"
 
-//
-// class decleration
-//
+class ClusterShapeHitFilterESProducer : public edm::ESProducer {
+public:
+    using ReturnType = std::unique_ptr<cluster_shape::ClusterShapeHitFilter>;
+    using Record = TrajectoryFilter::Record;
 
-class ClusterShapeHitFilterESProducer : public edm::ESProducer
-{
- public:
-  ClusterShapeHitFilterESProducer(const edm::ParameterSet&);
-  ~ClusterShapeHitFilterESProducer();
+    ClusterShapeHitFilterESProducer(const edm::ParameterSet&);
+    ReturnType produce(const Record &);
 
-  typedef std::unique_ptr<ClusterShapeHitFilter> ReturnType;
-  ReturnType produce(const ClusterShapeHitFilter::Record &);
-
- private:
-  const std::string use_PixelShapeFile;
-  bool cutOnPixelCharge_, cutOnStripCharge_;
-  float minGoodPixelCharge_, minGoodStripCharge_;
-  bool cutOnPixelShape_, cutOnStripShape_;
+private:
+    std::string use_PixelShapeFile;
+    float minGoodPixelCharge_, minGoodStripCharge_;
+    bool cutOnPixelCharge_, cutOnStripCharge_;
+    bool cutOnPixelShape_, cutOnStripShape_;
 };
 
 #endif

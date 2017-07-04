@@ -10,7 +10,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "RecoTracker/TkSeedingLayers/interface/SeedComparitor.h"
 
-class ClusterShapeHitFilter;
+namespace cluster_shape { class ClusterShapeHitFilter; }
 class TrackerTopology;
 class TrackerGeometry;
 class TrajectoryMeasurement;
@@ -61,7 +61,7 @@ class StripSubClusterShapeFilterBase {
 #endif
 
         edm::ESHandle<TrackerGeometry> theTracker;
-        edm::ESHandle<ClusterShapeHitFilter> theFilter;
+        edm::ESHandle<cluster_shape::ClusterShapeHitFilter> theFilter;
         edm::ESHandle<SiStripNoises>  theNoise;
         edm::ESHandle<TrackerTopology> theTopology;
 };

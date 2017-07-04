@@ -69,18 +69,17 @@ void PixelTripletHLTGenerator::fillDescriptions(edm::ParameterSetDescription& de
   desc.add<edm::ParameterSetDescription>("SeedComparitorPSet", descComparitor);
 }
 
-void PixelTripletHLTGenerator::hitTriplets(const TrackingRegion& region, 
-					   OrderedHitTriplets & result,
-					   const edm::Event & ev,
-					   const edm::EventSetup& es,
-					   const SeedingLayerSetsHits::SeedingLayerSet& pairLayers,
-					   const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers)
+void PixelTripletHLTGenerator::hitTriplets(const TrackingRegion& region, OrderedHitTriplets & result,
+                                           const edm::Event & ev, const edm::EventSetup& es,
+                                           const SeedingLayerSetsHits::SeedingLayerSet& pairLayers,
+                                           const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers,
+                                           LowPtClusterShapeSeedComparitor::ExtendedResultCollection* outEx)
 {
     auto const & doublets = thePairGenerator->doublets(region,ev,es, pairLayers);
     if (doublets.empty()) return;
 
     assert(theLayerCache);
-    hitTriplets(region, result, ev, es, doublets, thirdLayers, nullptr, *theLayerCache);
+    hitTriplets(region, result, ev, es, doublets, thirdLayers, nullptr, *theLayerCache, outEx);
 }
 
 void PixelTripletHLTGenerator::hitTriplets(const TrackingRegion& region, OrderedHitTriplets& result,
@@ -88,7 +87,9 @@ void PixelTripletHLTGenerator::hitTriplets(const TrackingRegion& region, Ordered
                                            const HitDoublets& doublets,
                                            const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers,
                                            std::vector<int> *tripletLastLayerIndex,
-                                           LayerCacheType& layerCache) {
+                                           LayerCacheType& layerCache,
+                                           LowPtClusterShapeSeedComparitor::ExtendedResultCollection* outEx)
+{
     if (theComparitor) theComparitor->init(ev, es);
 
     int size = thirdLayers.size();
@@ -99,19 +100,17 @@ void PixelTripletHLTGenerator::hitTriplets(const TrackingRegion& region, Ordered
 	thirdHitMap[il] = &layerCache(thirdLayers[il], region, es);
 	thirdLayerDetLayer[il] = thirdLayers[il].detLayer();
     }
-    hitTriplets(region, result, es, doublets, thirdHitMap, thirdLayerDetLayer, size, tripletLastLayerIndex);
+    hitTriplets(region, result, es, doublets, thirdHitMap, thirdLayerDetLayer, size, tripletLastLayerIndex, outEx);
 }
 
-void PixelTripletHLTGenerator::hitTriplets(
-    const TrackingRegion& region, 
-    OrderedHitTriplets & result,
-    const edm::EventSetup & es,
-    const HitDoublets & doublets,
-    const RecHitsSortedInPhi ** thirdHitMap,
-    const std::vector<const DetLayer *> & thirdLayerDetLayer,
-    const int nThirdLayers)
+void PixelTripletHLTGenerator::hitTriplets(const TrackingRegion& region, OrderedHitTriplets & result,
+                                           const edm::EventSetup & es, const HitDoublets & doublets,
+                                           const RecHitsSortedInPhi ** thirdHitMap,
+                                           const std::vector<const DetLayer *> & thirdLayerDetLayer,
+                                           const int nThirdLayers,
+                                           LowPtClusterShapeSeedComparitor::ExtendedResultCollection* outEx)
 {
-  hitTriplets(region, result, es, doublets, thirdHitMap, thirdLayerDetLayer, nThirdLayers, nullptr);
+  hitTriplets(region, result, es, doublets, thirdHitMap, thirdLayerDetLayer, nThirdLayers, nullptr, outEx);
 }
 
 void PixelTripletHLTGenerator::hitTriplets(const TrackingRegion& region, OrderedHitTriplets & result,
@@ -120,7 +119,9 @@ void PixelTripletHLTGenerator::hitTriplets(const TrackingRegion& region, Ordered
                                            const RecHitsSortedInPhi ** thirdHitMap,
                                            const std::vector<const DetLayer *> & thirdLayerDetLayer,
                                            const int nThirdLayers,
-                                           std::vector<int> *tripletLastLayerIndex) {
+                                           std::vector<int> *tripletLastLayerIndex,
+                                           LowPtClusterShapeSeedComparitor::ExtendedResultCollection* outEx)
+{
   auto outSeq =  doublets.detLayer(HitDoublets::outer)->seqNum();
 
   float regOffset = region.origin().perp(); //try to take account of non-centrality (?)
@@ -344,7 +345,18 @@ void PixelTripletHLTGenerator::hitTriplets(const TrackingRegion& region, Ordered
 	  if (checkPhiInRange(p3_phi, rangeRPhi.first*ir-phiErr, rangeRPhi.second*ir+phiErr,maxPhiErr)) {
 	    // insert here check with comparitor
 	    OrderedHitTriplet hittriplet( doublets.hit(ip,HitDoublets::inner), doublets.hit(ip,HitDoublets::outer), hits.theHits[KDdata].hit());
-	    if (!theComparitor  || theComparitor->compatible(hittriplet) ) {
+
+        auto lowPtComparitor = theComparitor ? dynamic_cast<LowPtClusterShapeSeedComparitor*>(theComparitor.get()) : nullptr;
+        bool comparitorResult = false;
+        if(outEx && lowPtComparitor) {
+            LowPtClusterShapeSeedComparitor::ExtendedResult resultEx;
+            comparitorResult = lowPtComparitor->compatibleEx(hittriplet, &resultEx);
+            outEx->push_back(resultEx);
+        } else {
+            comparitorResult = !theComparitor || theComparitor->compatible(hittriplet);
+        }
+
+        if (comparitorResult) {
 	      result.push_back( hittriplet );
               // to bookkeep the triplets and 3rd layers in triplet EDProducer
               if(tripletLastLayerIndex) tripletLastLayerIndex->push_back(il);

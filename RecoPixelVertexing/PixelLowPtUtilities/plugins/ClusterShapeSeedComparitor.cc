@@ -38,7 +38,7 @@ class PixelClusterShapeSeedComparitor : public SeedComparitor {
         bool compatibleHit(const TrackingRecHit &hit, const GlobalVector &direction) const ;
 
         std::string filterName_;
-        edm::ESHandle<ClusterShapeHitFilter> filterHandle_;
+        edm::ESHandle<cluster_shape::ClusterShapeHitFilter> filterHandle_;
         edm::EDGetTokenT<SiPixelClusterShapeCache> pixelClusterShapeCacheToken_;
         const SiPixelClusterShapeCache *pixelClusterShapeCache_;
         const bool filterAtHelixStage_;

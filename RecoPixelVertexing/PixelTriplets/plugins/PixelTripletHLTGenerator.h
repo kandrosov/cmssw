@@ -11,6 +11,7 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "RecoPixelVertexing/PixelTriplets/interface/HitTripletGeneratorFromPairAndLayers.h"
+#include "RecoPixelVertexing/PixelLowPtUtilities/interface/LowPtClusterShapeSeedComparitor.h"
 
 #include <utility>
 #include <vector>
@@ -33,23 +34,47 @@ public:
   virtual void hitTriplets( const TrackingRegion& region, OrderedHitTriplets & trs,
                             const edm::Event & ev, const edm::EventSetup& es,
                             const SeedingLayerSetsHits::SeedingLayerSet& pairLayers,
-                            const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers) override;
+                            const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers) override
+  {
+      hitTriplets(region, trs, ev, es, pairLayers, thirdLayers, nullptr);
+  }
 
-  void hitTriplets(const TrackingRegion& region, OrderedHitTriplets& trs,
+  virtual void hitTriplets( const TrackingRegion& region, OrderedHitTriplets & trs,
+                            const edm::Event & ev, const edm::EventSetup& es,
+                            const SeedingLayerSetsHits::SeedingLayerSet& pairLayers,
+                            const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers,
+                            LowPtClusterShapeSeedComparitor::ExtendedResultCollection* outEx) override;
+
+  virtual void hitTriplets(const TrackingRegion& region, OrderedHitTriplets& trs,
                    const edm::Event& ev, const edm::EventSetup& es,
                    const HitDoublets& doublets,
                    const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers,
                    std::vector<int> *tripletLastLayerIndex,
-                   LayerCacheType& layerCache);
+                   LayerCacheType& layerCache) override
+  {
+      hitTriplets(region, trs, ev, es, doublets, thirdLayers, tripletLastLayerIndex, layerCache, nullptr);
+  }
 
-    void hitTriplets(
-	const TrackingRegion& region, 
-	OrderedHitTriplets & result,
-	const edm::EventSetup & es,
-	const HitDoublets & doublets,
-	const RecHitsSortedInPhi ** thirdHitMap,
-	const std::vector<const DetLayer *> & thirdLayerDetLayer,
-	const int nThirdLayers)override;
+  virtual void hitTriplets(const TrackingRegion& region, OrderedHitTriplets& trs,
+                   const edm::Event& ev, const edm::EventSetup& es,
+                   const HitDoublets& doublets,
+                   const std::vector<SeedingLayerSetsHits::SeedingLayer>& thirdLayers,
+                   std::vector<int> *tripletLastLayerIndex,
+                   LayerCacheType& layerCache,
+                   LowPtClusterShapeSeedComparitor::ExtendedResultCollection* outEx) override;
+
+  virtual void hitTriplets(const TrackingRegion& region,  OrderedHitTriplets & result, const edm::EventSetup & es,
+                           const HitDoublets & doublets, const RecHitsSortedInPhi ** thirdHitMap,
+                           const std::vector<const DetLayer *> & thirdLayerDetLayer, const int nThirdLayers) override
+  {
+      hitTriplets(region, result, es, doublets, thirdHitMap, thirdLayerDetLayer, nThirdLayers, nullptr);
+  }
+
+
+  virtual void hitTriplets(const TrackingRegion& region,  OrderedHitTriplets & result, const edm::EventSetup & es,
+                           const HitDoublets & doublets, const RecHitsSortedInPhi ** thirdHitMap,
+                           const std::vector<const DetLayer *> & thirdLayerDetLayer, const int nThirdLayers,
+                           LowPtClusterShapeSeedComparitor::ExtendedResultCollection* outEx) override;
 
   void hitTriplets(const TrackingRegion& region, OrderedHitTriplets & result,
                    const edm::EventSetup & es,
@@ -57,7 +82,8 @@ public:
                    const RecHitsSortedInPhi ** thirdHitMap,
                    const std::vector<const DetLayer *> & thirdLayerDetLayer,
                    const int nThirdLayers,
-                   std::vector<int> *tripletLastLayerIndex);
+                   std::vector<int> *tripletLastLayerIndex,
+                   LowPtClusterShapeSeedComparitor::ExtendedResultCollection* outEx);
 
 private:
   const bool useFixedPreFiltering;

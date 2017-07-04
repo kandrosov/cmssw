@@ -15,10 +15,9 @@ typedef Vector2DBase<float,GlobalTag> Global2DVector;
 #include <vector>
 
 namespace edm { class EventSetup; }
-
+namespace cluster_shape { class ClusterShapeHitFilter; }
 class TrackerGeometry;
 class TrackingRecHit;
-class ClusterShapeHitFilter;
 class TrackerTopology;
 class SiPixelClusterShapeCache;
 
@@ -38,7 +37,7 @@ class ClusterShapeTrackFilter : public PixelTrackFilterBase
     getGlobalPoss(const std::vector<const TrackingRecHit *>& recHits) const;
 
   const TrackerGeometry * theTracker;
-  const ClusterShapeHitFilter * theFilter;
+  const cluster_shape::ClusterShapeHitFilter * theFilter;
   const SiPixelClusterShapeCache *theClusterShapeCache;
   const TrackerTopology *tTopo;
 

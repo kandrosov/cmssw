@@ -16,11 +16,12 @@ class LowPtClusterShapeSeedComparitor : public SeedComparitor {
 public:
 
     struct ClusterMatchResult {
-        size_t cluster_address;
         DetId detId;
-        GlobalVector globalPos, globalDir;
-        bool hasPixelRecHit = false, hasValidPixellRecHit = false;
-        ClusterShapeHitFilter::ExtendedResult filterResult;
+        const SiPixelRecHit* recHit;
+        GlobalPoint globalPos;
+        GlobalVector globalDir;
+        bool hasPixelRecHit = false, hasValidPixelRecHit = false;
+        cluster_shape::ClusterShapeHitFilter::ExtendedResult filterResult;
     };
 
     struct ExtendedResult {
@@ -28,8 +29,10 @@ public:
         std::vector<ClusterMatchResult> clusterMatchResults;
     };
 
+    using ExtendedResultCollection = std::vector<ExtendedResult>;
+
     LowPtClusterShapeSeedComparitor(const edm::ParameterSet& ps, edm::ConsumesCollector& iC);
-    virtual void init(const edm::Event& e, const edm::EventSetup& es);
+    virtual void init(const edm::Event& e, const edm::EventSetup& es) override;
     virtual bool compatible(const SeedingHitSet& hits) const override { return compatibleEx(hits, nullptr); }
     virtual bool compatible(const TrajectoryStateOnSurface&,
                             SeedingHitSet::ConstRecHitPointer) const override { return true; }
@@ -39,8 +42,7 @@ public:
     bool compatibleEx(const SeedingHitSet& hits, ExtendedResult* outEx = nullptr) const;
 
 private:
-    /// something
-    edm::ESHandle<ClusterShapeHitFilter> theShapeFilter;
+    edm::ESHandle<cluster_shape::ClusterShapeHitFilter> theShapeFilter;
     edm::ESHandle<TrackerTopology> theTTopo;
     edm::EDGetTokenT<SiPixelClusterShapeCache> thePixelClusterShapeCacheToken;
     edm::Handle<SiPixelClusterShapeCache> thePixelClusterShapeCache;

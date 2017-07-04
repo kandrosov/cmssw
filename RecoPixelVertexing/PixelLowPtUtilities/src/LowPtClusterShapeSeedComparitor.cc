@@ -29,154 +29,145 @@
 
 
 namespace {
-  typedef Basic2DVector<float>   Vector2D;
+using Vector2D = Basic2DVector<float>;
 
-  inline float sqr(float x) { return x*x; }
+inline float sqr(float x) { return x*x; }
 
-  /*****************************************************************************/
-  inline
-  float areaParallelogram
-  (const Vector2D& a, const Vector2D& b)
-  {  
+inline float areaParallelogram (const Vector2D& a, const Vector2D& b)
+{
     return a.x() * b.y() - a.y() * b.x();
-  }
-  
-  /*****************************************************************************/
+}
 
-  inline 
-  bool getGlobalDirs(GlobalPoint const * g, GlobalVector * globalDirs)
-  {
-    
-    
+inline bool getGlobalDirs(const GlobalPoint* g, GlobalVector* globalDirs)
+{
     // Determine circle
     CircleFromThreePoints circle(g[0],g[1],g[2]);
-    
+
     float curvature = circle.curvature();
     if(0.f == curvature) {
-      LogDebug("LowPtClusterShapeSeedComparitor")<<"the curvature is null:"
-						 <<"\n point1: "<<g[0]
-						 <<"\n point2: "<<g[1]
-						 <<"\n point3: "<<g[2];
-      return false;
+        LogDebug("LowPtClusterShapeSeedComparitor") << "the curvature is null:"
+                                                    << "\n point1: " << g[0]
+                                                    << "\n point2: " << g[1]
+                                                    << "\n point3: " << g[2];
+        return false;
     }
 
-   // Get 2d points
+    // Get 2d points
     Vector2D p[3];
-    Vector2D c  = circle.center();
-    for(int i=0; i!=3; i++)
-      p[i] =  g[i].basicVector().xy() -c;
- 
+    Vector2D c = circle.center();
+    for(int i = 0; i != 3; ++i)
+        p[i] = g[i].basicVector().xy() - c;
 
     float area = std::abs(areaParallelogram(p[1] - p[0], p[1]));
-    
     float a12 = std::asin(std::min(area*curvature*curvature,1.f));
-    
     float slope = (g[1].z() - g[0].z()) / a12;
- 
+
     // Calculate globalDirs
-   
-    float cotTheta = slope * curvature; 
+
+    float cotTheta = slope * curvature;
     float sinTheta = 1.f/std::sqrt(1.f + sqr(cotTheta));
     float cosTheta = cotTheta*sinTheta;
-    
+
     if (areaParallelogram(p[0], p[1] ) < 0)  sinTheta = - sinTheta;
-        
-    for(int i = 0; i!=3;  i++) {
-      Vector2D vl = p[i]*(curvature*sinTheta);
-      globalDirs[i] = GlobalVector(-vl.y(),
-				    vl.x(),
-				    cosTheta
-				    );
+
+    for(int i = 0; i != 3;  ++i) {
+        Vector2D vl = p[i]*(curvature*sinTheta);
+        globalDirs[i] = GlobalVector(-vl.y(), vl.x(), cosTheta);
     }
     return true;
-  }
+}
 
-  /*****************************************************************************/
-
-  
-  inline
-  void getGlobalPos(const SeedingHitSet &hits, GlobalPoint * globalPoss)
-  {
-    
-    for(unsigned int i=0; i!=hits.size(); ++i)
-  	globalPoss[i] = hits[i]->globalPosition();
-  }
+inline void getGlobalPos(const SeedingHitSet& hits, GlobalPoint* globalPoss)
+{
+    for(unsigned int i = 0; i != hits.size(); ++i)
+        globalPoss[i] = hits[i]->globalPosition();
+}
 
 } // namespace
 
-/*****************************************************************************/
-LowPtClusterShapeSeedComparitor::LowPtClusterShapeSeedComparitor(const edm::ParameterSet& ps, edm::ConsumesCollector& iC):
-  thePixelClusterShapeCacheToken(iC.consumes<SiPixelClusterShapeCache>(ps.getParameter<edm::InputTag>("clusterShapeCacheSrc"))),
-  theShapeFilterLabel_(ps.getParameter<std::string>("clusterShapeHitFilter"))
+LowPtClusterShapeSeedComparitor::LowPtClusterShapeSeedComparitor(const edm::ParameterSet& ps,
+                                                                 edm::ConsumesCollector& iC) :
+    thePixelClusterShapeCacheToken(iC.consumes<SiPixelClusterShapeCache>(ps.getParameter<edm::InputTag>("clusterShapeCacheSrc"))),
+    theShapeFilterLabel_(ps.getParameter<std::string>("clusterShapeHitFilter"))
 {}
 
-/*****************************************************************************/
-void LowPtClusterShapeSeedComparitor::init(const edm::Event& e, const edm::EventSetup& es) {
-  es.get<CkfComponentsRecord>().get(theShapeFilterLabel_, theShapeFilter);
-  es.get<TrackerTopologyRcd>().get(theTTopo);
-
-  e.getByToken(thePixelClusterShapeCacheToken, thePixelClusterShapeCache);
-}
-
-bool LowPtClusterShapeSeedComparitor::compatibleEx(const SeedingHitSet &hits, ExtendedResult* outEx) const
-//(const reco::Track* track, const vector<const TrackingRecHit *> & recHits) const
+void LowPtClusterShapeSeedComparitor::init(const edm::Event& e, const edm::EventSetup& es)
 {
-  assert(hits.size()==3);
+    es.get<CkfComponentsRecord>().get(theShapeFilterLabel_, theShapeFilter);
+    es.get<TrackerTopologyRcd>().get(theTTopo);
 
-  const ClusterShapeHitFilter * filter = theShapeFilter.product();
-  if(filter == 0)
-    throw cms::Exception("LogicError") << "LowPtClusterShapeSeedComparitor: init(EventSetup) method was not called";
-
-   // Get global positions
-   GlobalPoint  globalPoss[3];
-   getGlobalPos(hits, globalPoss);
-
-  // Get global directions
-  GlobalVector globalDirs[3]; 
-
-  bool ok = getGlobalDirs(globalPoss,globalDirs);
-
-  // Check whether shape of pixel cluster is compatible
-  // with local track direction
-
-  if (!ok)
-    {
-      LogDebug("LowPtClusterShapeSeedComparitor")<<"curvarture 0:"
-						 <<"\nnHits: "<<hits.size()
-						 <<" will say the seed is good anyway.";
-      return true;
-    }
-
-  for(int i = 0; i < 3; i++)
-  {
-    const SiPixelRecHit* pixelRecHit =
-      dynamic_cast<const SiPixelRecHit *>(hits[i]->hit());
-
-    if (!pixelRecHit){
-      edm::LogError("LowPtClusterShapeSeedComparitor")<<"this is not a pixel cluster";
-      ok = false; break;
-    }
-
-    if(!pixelRecHit->isValid())
-    { 
-      ok = false; break; 
-    }
-    
-    LogDebug("LowPtClusterShapeSeedComparitor")<<"about to compute compatibility."
-					       <<"hit ptr: "<<pixelRecHit
-					       <<"global direction:"<< globalDirs[i];
-
-
-    if(! filter->isCompatible(*pixelRecHit, globalDirs[i], *thePixelClusterShapeCache) )
-    {
-      LogTrace("LowPtClusterShapeSeedComparitor")
-         << " clusShape is not compatible"
-         << HitInfo::getInfo(*hits[i]->hit(),theTTopo.product());
-
-      ok = false; break;
-    }
-  }
-
-  return ok;
+    e.getByToken(thePixelClusterShapeCacheToken, thePixelClusterShapeCache);
 }
 
+bool LowPtClusterShapeSeedComparitor::compatibleEx(const SeedingHitSet& hits, ExtendedResult* outEx) const
+{
+    assert(hits.size()==3);
+
+    auto filter = theShapeFilter.product();
+    if(!filter)
+        throw cms::Exception("LogicError") << "LowPtClusterShapeSeedComparitor: init(EventSetup) method was not called";
+
+    // Get global positions
+    GlobalPoint globalPoss[3];
+    getGlobalPos(hits, globalPoss);
+
+    // Get global directions
+    GlobalVector globalDirs[3];
+    bool ok = getGlobalDirs(globalPoss,globalDirs);
+
+    if(outEx) {
+        outEx->compatible = true;
+        outEx->hasGlobalDir = ok;
+    }
+
+    // Check whether shape of pixel cluster is compatible
+    // with local track direction
+    if(!ok) {
+        LogDebug("LowPtClusterShapeSeedComparitor") << "curvarture 0:" << "\nnHits: " << hits.size()
+                                                    << " will say the seed is good anyway.";
+        return true;
+    }
+
+    for(int i = 0; i < 3; ++i) {
+        auto pixelRecHit = dynamic_cast<const SiPixelRecHit*>(hits[i]->hit());
+
+        if(outEx) {
+            outEx->clusterMatchResults.emplace_back();
+            outEx->clusterMatchResults.back().detId = hits[i]->hit()->geographicalId();
+            outEx->clusterMatchResults.back().globalPos = globalPoss[i];
+            outEx->clusterMatchResults.back().globalDir = globalDirs[i];
+            outEx->clusterMatchResults.back().hasPixelRecHit = pixelRecHit;
+            outEx->clusterMatchResults.back().hasValidPixelRecHit = pixelRecHit && pixelRecHit->isValid();
+            outEx->clusterMatchResults.back().recHit = pixelRecHit;
+        }
+
+        if(!pixelRecHit) {
+            edm::LogError("LowPtClusterShapeSeedComparitor") << "this is not a pixel cluster";
+            ok = false;
+            if(outEx) continue;
+            else break;
+        }
+
+        if(!pixelRecHit->isValid()) {
+            ok = false;
+            if(outEx) continue;
+            else break;
+        }
+
+//        LogDebug("LowPtClusterShapeSeedComparitor") << "about to compute compatibility." << "hit ptr: " << pixelRecHit
+//                                                    << "global direction:" << globalDirs[i];
+
+        auto filterResult = outEx ? &outEx->clusterMatchResults.back().filterResult : nullptr;
+        if(!filter->isCompatible(*pixelRecHit, globalDirs[i], *thePixelClusterShapeCache, nullptr, filterResult)) {
+//            LogTrace("LowPtClusterShapeSeedComparitor") << " clusShape is not compatible"
+//                                                        << HitInfo::getInfo(*hits[i]->hit(), theTTopo.product());
+            ok = false;
+            if(outEx) continue;
+            else break;
+        }
+    }
+
+    if(outEx)
+        outEx->compatible = ok;
+    return ok;
+}

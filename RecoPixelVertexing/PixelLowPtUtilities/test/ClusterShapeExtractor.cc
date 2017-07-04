@@ -96,7 +96,7 @@ class ClusterShapeExtractor : public edm::EDAnalyzer
    const TrackerGeometry * theTracker;
    std::unique_ptr<TrackerHitAssociator> theHitAssociator;
    TrackerHitAssociator::Config trackerHitAssociatorConfig_;
-   const ClusterShapeHitFilter * theClusterShape;
+   const cluster_shape::ClusterShapeHitFilter * theClusterShape;
 
    vector<TH2F *> hspc; // simulated pixel cluster
    vector<TH1F *> hssc; // simulated strip cluster
@@ -115,7 +115,7 @@ void ClusterShapeExtractor::beginRun(const edm::Run & run, const edm::EventSetup
 
   // 
   //  theClusterShape = new ClusterShapeHitFilter(es);
-  edm::ESHandle<ClusterShapeHitFilter> shape;
+  edm::ESHandle<cluster_shape::ClusterShapeHitFilter> shape;
   es.get<CkfComponentsRecord>().get("ClusterShapeHitFilter",shape);
   theClusterShape = shape.product();
 

@@ -154,7 +154,7 @@ void MultiHitGeneratorFromChi2::initES(const edm::EventSetup& es)
 
   if(refitHits)
   {
-      edm::ESHandle<ClusterShapeHitFilter> filterHandle_;
+      edm::ESHandle<cluster_shape::ClusterShapeHitFilter> filterHandle_;
       es.get<CkfComponentsRecord>().get(filterName_, filterHandle_);
       filter = filterHandle_.product();
       

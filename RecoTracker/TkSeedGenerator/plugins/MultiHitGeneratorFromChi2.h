@@ -85,7 +85,7 @@ private:
 		  float nomField, bool isDebug);
   */
 private:
-  const ClusterShapeHitFilter* filter;
+  const cluster_shape::ClusterShapeHitFilter* filter;
   TkTransientTrackingRecHitBuilder const * builder;
   TkClonerImpl cloner;
 

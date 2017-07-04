@@ -36,7 +36,7 @@ ClusterShapeTrackFilter::ClusterShapeTrackFilter(const SiPixelClusterShapeCache 
   theTracker = tracker.product();
 
   // Get cluster shape hit filter
-  edm::ESHandle<ClusterShapeHitFilter> shape;
+  edm::ESHandle<cluster_shape::ClusterShapeHitFilter> shape;
   es.get<CkfComponentsRecord>().get("ClusterShapeHitFilter",shape);
   theFilter = shape.product();
 
