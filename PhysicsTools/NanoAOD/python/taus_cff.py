@@ -6,7 +6,7 @@ from PhysicsTools.JetMCAlgos.TauGenJetsDecayModeSelectorAllHadrons_cfi import ta
 ##################### User floats producers, selectors ##########################
 
 finalTaus = cms.EDFilter("PATTauRefSelector",
-    src = cms.InputTag("slimmedTausNewID"),
+    src = cms.InputTag("slimmedTausUpdated"),
     cut = cms.string("pt > 18 && tauID('decayModeFindingNewDMs') && ("
                      "tauID('byLooseCombinedIsolationDeltaBetaCorr3Hits') || "
                      "tauID('byVVLooseIsolationMVArun2017v2DBoldDMwLT2017') || "
