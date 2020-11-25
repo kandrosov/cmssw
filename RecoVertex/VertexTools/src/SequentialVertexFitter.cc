@@ -10,7 +10,7 @@ namespace {
   // FIXME
   // hard-coded tracker bounds
   // workaround while waiting for Geometry service
-  const float TrackerBoundsRadius = 500.; // muon system
+  const float TrackerBoundsRadius = 650.; // before last layer of muon system
   const float TrackerBoundsHalfLength = 1000.; // muon system
   bool insideTrackerBounds(const GlobalPoint& point) {
     return ((point.transverse() < TrackerBoundsRadius)
