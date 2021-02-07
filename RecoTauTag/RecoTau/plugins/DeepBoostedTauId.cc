@@ -950,13 +950,13 @@ private:
         get(dnn::tau_flightLength_z) = getValueNorm(tau.flightLength().z(), -0.0022f, 1.993f);
         // get(dnn::tau_flightLength_sig) = getValueNorm(tau.flightLengthSig(), -4.78f, 9.573f);
         get(dnn::tau_flightLength_sig) = 0.55756444; //This value is set due to a bug in the training
-        get(dnn::tau_pt_weighted_deta_strip) = getValueLinear(clusterVariables.tau_pt_weighted_deta_strip(tau, tau.decayMode()), 0, 1, true);
+        get(dnn::tau_pt_weighted_deta_strip) = getValueLinear(reco::tau::pt_weighted_deta_strip(tau, tau.decayMode()), 0, 1, true);
 
-        get(dnn::tau_pt_weighted_dphi_strip) = getValueLinear(clusterVariables.tau_pt_weighted_dphi_strip(tau, tau.decayMode()), 0, 1, true);
-        get(dnn::tau_pt_weighted_dr_signal) = getValueNorm(clusterVariables.tau_pt_weighted_dr_signal(tau, tau.decayMode()), 0.0052f, 0.01433f);
-        get(dnn::tau_pt_weighted_dr_iso) = getValueLinear(clusterVariables.tau_pt_weighted_dr_iso(tau,tau.decayMode()), 0, 1, true);
+        get(dnn::tau_pt_weighted_dphi_strip) = getValueLinear(reco::tau::pt_weighted_dphi_strip(tau, tau.decayMode()), 0, 1, true);
+        get(dnn::tau_pt_weighted_dr_signal) = getValueNorm(reco::tau::pt_weighted_dr_signal(tau, tau.decayMode()), 0.0052f, 0.01433f);
+        get(dnn::tau_pt_weighted_dr_iso) = getValueLinear(reco::tau::pt_weighted_dr_iso(tau,tau.decayMode()), 0, 1, true);
         get(dnn::tau_leadingTrackNormChi2) = getValueNorm(tau.leadingTrackNormChi2(), 1.538f, 4.401f);
-        const auto eratio = clusterVariables.tau_Eratio(tau);
+        const auto eratio = reco::tau::eratio(tau);
         const bool tau_e_ratio_valid = std::isnormal(eratio) && eratio > 0.f;
         get(dnn::tau_e_ratio_valid) = tau_e_ratio_valid;
         get(dnn::tau_e_ratio) = tau_e_ratio_valid ? getValueLinear(eratio, 0, 1, true) : 0.f;
@@ -964,7 +964,7 @@ private:
         const bool tau_gj_angle_diff_valid = (std::isnormal(gj_angle_diff) || gj_angle_diff == 0) && gj_angle_diff >= 0;
         get(dnn::tau_gj_angle_diff_valid) = tau_gj_angle_diff_valid;
         get(dnn::tau_gj_angle_diff) = tau_gj_angle_diff_valid ? getValueLinear(gj_angle_diff, 0, pi, true) : 0;
-        get(dnn::tau_n_photons) = getValueNorm(clusterVariables.tau_n_photons_total(tau), 2.95f, 3.927f);
+        get(dnn::tau_n_photons) = getValueNorm(reco::tau::n_photons_total(tau), 2.95f, 3.927f);
         get(dnn::tau_emFraction) = getValueLinear(tau.emFraction_MVA(), -1, 1, false);
         get(dnn::tau_inside_ecal_crack) = getValue(isInEcalCrack(tau.p4().eta()));
         get(dnn::leadChargedCand_etaAtEcalEntrance_minus_tau_eta) =
@@ -1375,7 +1375,6 @@ private:
     {
         static constexpr bool check_all_set = false;
         static constexpr float default_value_for_set_check = -42;
-        static const TauIdMVAAuxiliaries clusterVariables;
 
         tensorflow::Tensor inputs(tensorflow::DT_FLOAT, { 1, dnn_inputs_2017v1::NumberOfInputs});
         const auto& get = [&](int var_index) -> float& { return inputs.matrix<float>()(0, var_index); };
@@ -1413,14 +1412,14 @@ private:
                 ? dPhi(leadChargedHadrCand->p4(), tau.p4()) : default_value;
         get(dnn::leadChargedHadrCand_mass) = leadChargedHadrCand
                 ? leadChargedHadrCand->p4().mass() : default_value;
-        get(dnn::pt_weighted_deta_strip) = clusterVariables.tau_pt_weighted_deta_strip(tau, tau.decayMode());
-        get(dnn::pt_weighted_dphi_strip) = clusterVariables.tau_pt_weighted_dphi_strip(tau, tau.decayMode());
-        get(dnn::pt_weighted_dr_signal) = clusterVariables.tau_pt_weighted_dr_signal(tau, tau.decayMode());
-        get(dnn::pt_weighted_dr_iso) = clusterVariables.tau_pt_weighted_dr_iso(tau, tau.decayMode());
+        get(dnn::pt_weighted_deta_strip) = reco::tau::pt_weighted_deta_strip(tau, tau.decayMode());
+        get(dnn::pt_weighted_dphi_strip) = reco::tau::pt_weighted_dphi_strip(tau, tau.decayMode());
+        get(dnn::pt_weighted_dr_signal) = reco::tau::pt_weighted_dr_signal(tau, tau.decayMode());
+        get(dnn::pt_weighted_dr_iso) = reco::tau::pt_weighted_dr_iso(tau, tau.decayMode());
         get(dnn::leadingTrackNormChi2) = tau.leadingTrackNormChi2();
-        get(dnn::e_ratio) = clusterVariables.tau_Eratio(tau);
+        get(dnn::e_ratio) = reco::tau::eratio(tau);
         get(dnn::gj_angle_diff) = calculateGottfriedJacksonAngleDifference(tau);
-        get(dnn::n_photons) = clusterVariables.tau_n_photons_total(tau);
+        get(dnn::n_photons) = reco::tau::n_photons_total(tau);
         get(dnn::emFraction) = tau.emFraction_MVA();
         get(dnn::has_gsf_track) = leadChargedHadrCand && std::abs(leadChargedHadrCand->pdgId()) == 11;
         get(dnn::inside_ecal_crack) = isInEcalCrack(tau.p4().Eta());
@@ -1703,7 +1702,6 @@ private:
     std::shared_ptr<tensorflow::Tensor> tauBlockTensor_;
     std::array<std::shared_ptr<tensorflow::Tensor>, 2> eGammaTensor_, muonTensor_, hadronsTensor_,
                                                        convTensor_, zeroOutputTensor_;
-    TauIdMVAAuxiliaries clusterVariables;
 };
 
 #include "FWCore/Framework/interface/MakerMacros.h"
