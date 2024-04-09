@@ -16,6 +16,8 @@
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/DTRecHit/interface/DTRecSegment4D.h"
 #include "DataFormats/TrackingRecHit/interface/RecSegment.h"
+#include "DataFormats/DTRecHit/interface/DTRecSegment4DCollection.h"
+#include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
 #include "DataFormats/RPCRecHit/interface/RPCRecHitCollection.h"
 #include "DataFormats/DTRecHit/interface/DTRecHitCollection.h"
 #include "DataFormats/CSCRecHit/interface/CSCRecHit2DCollection.h"
@@ -31,13 +33,13 @@
 #include <vector>
 
 SegmentToTrackAssociator::SegmentToTrackAssociator(const edm::ParameterSet& iConfig,
-                                                   const GlobalTrackingGeometry* GlobalTrackingGeometry,
-                                                   edm::ConsumesCollector& iC)
-    : globalTrackingGeometry_(GlobalTrackingGeometry),
-      theDTSegmentLabel(iConfig.getParameter<edm::InputTag>("segmentsDT")),
-      theCSCSegmentLabel(iConfig.getParameter<edm::InputTag>("segmentsCSC")),
-      tokenDTSegment_(iC.consumes<DTRecSegment4DCollection>(theDTSegmentLabel)),
-      tokenCSCSegment_(iC.consumes<CSCSegmentCollection>(theCSCSegmentLabel)) {}
+                                                   const GlobalTrackingGeometry* GlobalTrackingGeometry)
+    : globalTrackingGeometry_(GlobalTrackingGeometry) {
+  theDTSegmentLabel = iConfig.getParameter<edm::InputTag>("segmentsDT");
+  theCSCSegmentLabel = iConfig.getParameter<edm::InputTag>("segmentsCSC");
+}
+
+SegmentToTrackAssociator::~SegmentToTrackAssociator() {}
 
 void SegmentToTrackAssociator::clear() {
   indexCollectionDT.clear();
@@ -49,9 +51,11 @@ MuonTransientTrackingRecHit::MuonRecHitContainer SegmentToTrackAssociator::assoc
                                                                                      const reco::Track& track,
                                                                                      std::string TrackRefitterType) {
   // The segment collections
-  const edm::Handle<DTRecSegment4DCollection>& DTSegments = iEvent.getHandle(tokenDTSegment_);
+  edm::Handle<DTRecSegment4DCollection> DTSegments;
+  iEvent.getByLabel(theDTSegmentLabel, DTSegments);
 
-  const edm::Handle<CSCSegmentCollection>& CSCSegments = iEvent.getHandle(tokenCSCSegment_);
+  edm::Handle<CSCSegmentCollection> CSCSegments;
+  iEvent.getByLabel(theCSCSegmentLabel, CSCSegments);
 
   MuonTransientTrackingRecHit::MuonRecHitContainer SelectedSegments;
 
