@@ -464,6 +464,7 @@ bool CSCPairResidualsConstraint::dphidzFromTrack(const std::vector<TrajectoryMea
                                                  double &dphidz) {
   // make a list of hits on all chambers *other* than the ones associated with this constraint
   std::map<int, int> stations;
+  int total = 0;
   TransientTrackingRecHit::ConstRecHitContainer cscHits;
   for (std::vector<TrajectoryMeasurement>::const_iterator measurement = measurements.begin();
        measurement != measurements.end();
@@ -481,6 +482,7 @@ bool CSCPairResidualsConstraint::dphidzFromTrack(const std::vector<TrajectoryMea
           stations[station] = 0;
         }
         stations[station]++;
+        total++;
 
         cscHits.push_back(measurement->recHit());
       }

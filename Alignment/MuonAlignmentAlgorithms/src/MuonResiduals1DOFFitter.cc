@@ -68,6 +68,7 @@ bool MuonResiduals1DOFFitter::fit(Alignable *ali) {
   double resid_sum = 0.;
   double resid_sum2 = 0.;
   double resid_N = 0.;
+  int N = 0;
 
   for (std::vector<double *>::const_iterator resiter = residuals_begin(); resiter != residuals_end(); ++resiter) {
     const double residual = (*resiter)[MuonResiduals1DOFFitter::kResid];
@@ -81,6 +82,7 @@ bool MuonResiduals1DOFFitter::fit(Alignable *ali) {
         resid_sum += weight * residual;
         resid_sum2 += weight * residual * residual;
         resid_N += weight;
+        N++;
       }
     }
   }
@@ -147,8 +149,8 @@ bool MuonResiduals1DOFFitter::fit(Alignable *ali) {
     low.push_back(0.);
     high.push_back(0.);
   }
-
-  return dofit(&MuonResiduals1DOFFitter_FCN, num, name, start, step, low, high);
+  std::string chmamber_id = "NULL";
+  return dofit(&MuonResiduals1DOFFitter_FCN, num, name, start, step, low, high, chmamber_id);
 }
 
 double MuonResiduals1DOFFitter::plot(std::string name, TFileDirectory *dir, Alignable *ali) {

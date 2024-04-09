@@ -13,7 +13,6 @@
 #include "Alignment/MuonAlignmentAlgorithms/interface/MuonResidualsFromTrack.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -35,8 +34,7 @@
 class AlignmentMonitorMuonSystemMap1D : public AlignmentMonitorBase {
 public:
   AlignmentMonitorMuonSystemMap1D(const edm::ParameterSet &cfg, edm::ConsumesCollector iC);
-  ~AlignmentMonitorMuonSystemMap1D() override = default;
-  static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
+  ~AlignmentMonitorMuonSystemMap1D() override {}
 
   void book() override;
 
@@ -50,31 +48,28 @@ public:
 private:
   // es token
   const edm::ESGetToken<GlobalTrackingGeometry, GlobalTrackingGeometryRecord> m_esTokenGBTGeom;
-  const edm::ESGetToken<DetIdAssociator, DetIdAssociatorRecord> m_esTokenDetId;
   const edm::ESGetToken<Propagator, TrackingComponentsRecord> m_esTokenProp;
   const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> m_esTokenMF;
   const MuonResidualsFromTrack::BuilderToken m_esTokenBuilder;
 
   // parameters
-  const edm::InputTag m_muonCollectionTag;
-  const double m_minTrackPt;
-  const double m_maxTrackPt;
-  const double m_minTrackP;
-  const double m_maxTrackP;
-  const double m_maxDxy;
-  const int m_minTrackerHits;
-  const double m_maxTrackerRedChi2;
-  const bool m_allowTIDTEC;
-  const int m_minNCrossedChambers;
-  const int m_minDT13Hits;
-  const int m_minDT2Hits;
-  const int m_minCSCHits;
-  const bool m_doDT;
-  const bool m_doCSC;
-  const bool m_useStubPosition;
-  const bool m_createNtuple;
-  const edm::EDGetTokenT<reco::BeamSpot> bsToken_;
-  const edm::EDGetTokenT<reco::MuonCollection> muonToken_;
+  edm::InputTag m_muonCollectionTag;
+  double m_minTrackPt;
+  double m_maxTrackPt;
+  double m_minTrackP;
+  double m_maxTrackP;
+  double m_maxDxy;
+  int m_minTrackerHits;
+  double m_maxTrackerRedChi2;
+  bool m_allowTIDTEC;
+  int m_minNCrossedChambers;
+  int m_minDT13Hits;
+  int m_minDT2Hits;
+  int m_minCSCHits;
+  bool m_doDT;
+  bool m_doCSC;
+  bool m_useStubPosition;
+  bool m_createNtuple;
 
   // counter
   long m_counter_event;
@@ -157,7 +152,6 @@ AlignmentMonitorMuonSystemMap1D::AlignmentMonitorMuonSystemMap1D(const edm::Para
                                                                  edm::ConsumesCollector iC)
     : AlignmentMonitorBase(cfg, iC, "AlignmentMonitorMuonSystemMap1D"),
       m_esTokenGBTGeom(iC.esConsumes()),
-      m_esTokenDetId(iC.esConsumes(edm::ESInputTag("", "MuonDetIdAssociator"))),
       m_esTokenProp(iC.esConsumes(edm::ESInputTag("", "SteppingHelixPropagatorAny"))),
       m_esTokenMF(iC.esConsumes()),
       m_esTokenBuilder(iC.esConsumes(MuonResidualsFromTrack::builderESInputTag())),
@@ -177,9 +171,7 @@ AlignmentMonitorMuonSystemMap1D::AlignmentMonitorMuonSystemMap1D(const edm::Para
       m_doDT(cfg.getParameter<bool>("doDT")),
       m_doCSC(cfg.getParameter<bool>("doCSC")),
       m_useStubPosition(cfg.getParameter<bool>("useStubPosition")),
-      m_createNtuple(cfg.getParameter<bool>("createNtuple")),
-      bsToken_(iC.consumes<reco::BeamSpot>(m_beamSpotTag)),
-      muonToken_(iC.consumes<reco::MuonCollection>(m_muonCollectionTag)) {
+      m_createNtuple(cfg.getParameter<bool>("createNtuple")) {
   if (m_createNtuple) {
     edm::Service<TFileService> fs;
     m_cscnt = fs->make<TTree>("mualNtuple", "mualNtuple");
@@ -188,29 +180,6 @@ AlignmentMonitorMuonSystemMap1D::AlignmentMonitorMuonSystemMap1D(const edm::Para
     m_cscnt->Branch("re", &m_re.res, "res/F:slope:rho:phi:z");
     m_cscnt->Branch("run", &m_run, "run/i");
   }
-}
-
-void AlignmentMonitorMuonSystemMap1D::fillDescriptions(edm::ConfigurationDescriptions &descriptions) {
-  edm::ParameterSetDescription desc;
-  desc.add<edm::InputTag>("muonCollectionTag", edm::InputTag(""));
-  desc.addUntracked<edm::InputTag>("beamSpotTag", edm::InputTag("offlineBeamSpot"));
-  desc.add<double>("minTrackPt", 100.);
-  desc.add<double>("maxTrackPt", 200.);
-  desc.add<double>("minTrackP", 0.);
-  desc.add<double>("maxTrackP", 99999.);
-  desc.add<double>("maxDxy", 100.);
-  desc.add<int>("minTrackerHits", 15);
-  desc.add<double>("maxTrackerRedChi2", 10.);
-  desc.add<bool>("allowTIDTEC", true);
-  desc.add<int>("minNCrossedChambers", 3);
-  desc.add<int>("minDT13Hits", 8);
-  desc.add<int>("minDT2Hits", 4);
-  desc.add<int>("minCSCHits", 6);
-  desc.add<bool>("doDT", true);
-  desc.add<bool>("doCSC", true);
-  desc.add<bool>("useStubPosition", false);
-  desc.add<bool>("createNtuple", false);
-  descriptions.add("alignmentMonitorMuonSystemMap1D", desc);
 }
 
 std::string AlignmentMonitorMuonSystemMap1D::num02d(int num) {
@@ -295,10 +264,10 @@ void AlignmentMonitorMuonSystemMap1D::event(const edm::Event &iEvent,
                                             const ConstTrajTrackPairCollection &trajtracks) {
   m_counter_event++;
 
-  const edm::Handle<reco::BeamSpot> &beamSpot = iEvent.getHandle(bsToken_);
+  edm::Handle<reco::BeamSpot> beamSpot;
+  iEvent.getByLabel(m_beamSpotTag, beamSpot);
 
   const GlobalTrackingGeometry *globalGeometry = &iSetup.getData(m_esTokenGBTGeom);
-  const DetIdAssociator *muonDetIdAssociator_ = &iSetup.getData(m_esTokenDetId);
   const Propagator *prop = &iSetup.getData(m_esTokenProp);
   const MagneticField *magneticField = &iSetup.getData(m_esTokenMF);
   auto builder = iSetup.getHandle(m_esTokenBuilder);
@@ -318,13 +287,14 @@ void AlignmentMonitorMuonSystemMap1D::event(const edm::Event &iEvent,
           m_counter_trackdxy++;
 
           MuonResidualsFromTrack muonResidualsFromTrack(
-              builder, magneticField, globalGeometry, muonDetIdAssociator_, prop, traj, track, pNavigator(), 1000.);
+              builder, magneticField, globalGeometry, prop, traj, track, pNavigator(), 1000.);
           processMuonResidualsFromTrack(muonResidualsFromTrack, iEvent);
         }
       }  // end if track has acceptable momentum
     }    // end loop over tracks
   } else {
-    const edm::Handle<reco::MuonCollection> &muons = iEvent.getHandle(muonToken_);
+    edm::Handle<reco::MuonCollection> muons;
+    iEvent.getByLabel(m_muonCollectionTag, muons);
 
     for (reco::MuonCollection::const_iterator muon = muons->begin(); muon != muons->end(); ++muon) {
       if (!(muon->isTrackerMuon() && muon->innerTrack().isNonnull()))
@@ -494,7 +464,8 @@ void AlignmentMonitorMuonSystemMap1D::processMuonResidualsFromTrack(MuonResidual
         m_CSCvsphi_me[id.endcap() - 1][id.station() - 1][ring - 1]->fill_x(charge, phi, residual, chi2, dof);
         m_CSCvsphi_me[id.endcap() - 1][id.station() - 1][ring - 1]->fill_dxdz(charge, phi, resslope, chi2, dof);
 
-        if (m_createNtuple && chi2 > 0.) {  //  &&  TMath::Prob(chi2, dof) < 0.95)
+        if (m_createNtuple && chi2 > 0.)  //  &&  TMath::Prob(chi2, dof) < 0.95)
+        {
           m_id.init(id);
           m_tr.q = charge;
           m_tr.pt = mrft.getTrack()->pt();
@@ -515,17 +486,17 @@ void AlignmentMonitorMuonSystemMap1D::processMuonResidualsFromTrack(MuonResidual
 }
 
 void AlignmentMonitorMuonSystemMap1D::afterAlignment() {
-  edm::LogVerbatim("AlignmentMuonSystemMap") << "AlignmentMonitorMuonSystemMap1D counters:";
-  edm::LogVerbatim("AlignmentMuonSystemMap") << " monitor m_counter_event      = " << m_counter_event;
-  edm::LogVerbatim("AlignmentMuonSystemMap") << " monitor m_counter_track      = " << m_counter_track;
-  edm::LogVerbatim("AlignmentMuonSystemMap") << " monitor m_counter_trackppt   = " << m_counter_trackmoment;
-  edm::LogVerbatim("AlignmentMuonSystemMap") << " monitor m_counter_trackdxy   = " << m_counter_trackdxy;
-  edm::LogVerbatim("AlignmentMuonSystemMap") << " monitor m_counter_trackokay  = " << m_counter_trackokay;
-  edm::LogVerbatim("AlignmentMuonSystemMap") << " monitor m_counter_dt         = " << m_counter_dt;
-  edm::LogVerbatim("AlignmentMuonSystemMap") << " monitor m_counter_13numhits  = " << m_counter_13numhits;
-  edm::LogVerbatim("AlignmentMuonSystemMap") << " monitor m_counter_2numhits   = " << m_counter_2numhits;
-  edm::LogVerbatim("AlignmentMuonSystemMap") << " monitor m_counter_csc        = " << m_counter_csc;
-  edm::LogVerbatim("AlignmentMuonSystemMap") << " monitor m_counter_cscnumhits = " << m_counter_cscnumhits;
+  std::cout << "AlignmentMonitorMuonSystemMap1D counters:" << std::endl;
+  std::cout << " monitor m_counter_event      = " << m_counter_event << std::endl;
+  std::cout << " monitor m_counter_track      = " << m_counter_track << std::endl;
+  std::cout << " monitor m_counter_trackppt   = " << m_counter_trackmoment << std::endl;
+  std::cout << " monitor m_counter_trackdxy   = " << m_counter_trackdxy << std::endl;
+  std::cout << " monitor m_counter_trackokay  = " << m_counter_trackokay << std::endl;
+  std::cout << " monitor m_counter_dt         = " << m_counter_dt << std::endl;
+  std::cout << " monitor m_counter_13numhits  = " << m_counter_13numhits << std::endl;
+  std::cout << " monitor m_counter_2numhits   = " << m_counter_2numhits << std::endl;
+  std::cout << " monitor m_counter_csc        = " << m_counter_csc << std::endl;
+  std::cout << " monitor m_counter_cscnumhits = " << m_counter_cscnumhits << std::endl;
 }
 
 AlignmentMonitorMuonSystemMap1D::MuonSystemMapPlot1D::MuonSystemMapPlot1D(
