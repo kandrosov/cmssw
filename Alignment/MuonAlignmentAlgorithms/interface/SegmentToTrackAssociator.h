@@ -4,7 +4,6 @@
 #include <vector>
 
 //standard include
-#include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -18,14 +17,14 @@
 #include "TrackingTools/PatternTools/interface/TrajMeasLessEstim.h"
 #include "RecoMuon/TrackingTools/interface/MuonPatternRecoDumper.h"
 #include "RecoMuon/TransientTrackingRecHit/interface/MuonTransientTrackingRecHit.h"
-#include "DataFormats/DTRecHit/interface/DTRecSegment4DCollection.h"
-#include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "Geometry/Records/interface/GlobalTrackingGeometryRecord.h"
 #include "Geometry/CommonDetUnit/interface/GlobalTrackingGeometry.h"
 
 namespace edm {
+  class ParameterSet;
+  class Event;
   class EventSetup;
 }  // namespace edm
 
@@ -34,12 +33,10 @@ public:
   typedef std::vector<std::vector<int> > intDVector;
 
   //constructor
-  SegmentToTrackAssociator(const edm::ParameterSet&,
-                           const GlobalTrackingGeometry* GlobalTrackingGeometry,
-                           edm::ConsumesCollector&);
+  SegmentToTrackAssociator(const edm::ParameterSet&, const GlobalTrackingGeometry* GlobalTrackingGeometry);
 
   //destructor
-  virtual ~SegmentToTrackAssociator() = default;
+  virtual ~SegmentToTrackAssociator();
 
   //Associate
   MuonTransientTrackingRecHit::MuonRecHitContainer associate(const edm::Event&,
@@ -54,12 +51,10 @@ private:
   intDVector indexCollectionDT;
   intDVector indexCollectionCSC;
 
-  const GlobalTrackingGeometry* globalTrackingGeometry_;
+  edm::InputTag theDTSegmentLabel;
+  edm::InputTag theCSCSegmentLabel;
 
-  const edm::InputTag theDTSegmentLabel;
-  const edm::InputTag theCSCSegmentLabel;
-  const edm::EDGetTokenT<DTRecSegment4DCollection> tokenDTSegment_;
-  const edm::EDGetTokenT<CSCSegmentCollection> tokenCSCSegment_;
+  const GlobalTrackingGeometry* globalTrackingGeometry_;
 };
 
 #endif
