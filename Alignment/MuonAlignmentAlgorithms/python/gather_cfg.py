@@ -47,7 +47,7 @@ is_MC = (os.environ["ALIGNMENT_ISMC"] == "True")
 createLayerNtupleDT = (os.environ["ALIGNMENT_STORELAYERDT"] == "True")
 createLayerNtupleCSC = (os.environ["ALIGNMENT_STORELAYERCSC"] == "True")
 
-# optionally: create ntuples along with tmp files 
+# optionally: create ntuples along with tmp files
 createAlignNtuple = False
 envNtuple = os.getenv("ALIGNMENT_CREATEALIGNNTUPLE")
 if envNtuple is not None:
@@ -117,7 +117,7 @@ process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cf
 if not os.getenv("ALIGNMENT_JSON") == "":
   process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(*inputfiles),
-    skipEvents = cms.untracked.uint32(skipEvents)) 
+    skipEvents = cms.untracked.uint32(skipEvents))
   import FWCore.PythonUtilities.LumiList as LumiList
   process.source.lumisToProcess = LumiList.LumiList(filename = good_lumis).getVLuminosityBlockRange()
 else:
@@ -127,10 +127,10 @@ else:
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(maxEvents))
 
-process.MessageLogger = cms.Service("MessageLogger",
-                                    destinations = cms.untracked.vstring("cout"),
-                                    cout = cms.untracked.PSet(threshold = cms.untracked.string("ERROR"),
-                                                              ERROR = cms.untracked.PSet(limit = cms.untracked.int32(10))))
+# process.MessageLogger = cms.Service("MessageLogger",
+#                                     destinations = cms.untracked.vstring("cout"),
+#                                     cout = cms.untracked.PSet(threshold = cms.untracked.string("ERROR"),
+#                                                               ERROR = cms.untracked.PSet(limit = cms.untracked.int32(10))))
 
 process.load("Alignment.MuonAlignmentAlgorithms.MuonAlignmentFromReference_cff")
 process.looper.ParameterBuilder.Selector.alignParams = cms.vstring("MuonDTChambers,%s,stations123" % station123params, "MuonDTChambers,%s,station4" % station4params, "MuonCSCChambers,%s" % cscparams)
@@ -263,7 +263,7 @@ else:
     process.looper.tjTkAssociationMapTag = cms.InputTag("MuonAlignmentFromReferenceGlobalMuonRefit:Refitted")
 
 
-if len(muonCollectionTag) > 0: # use Tracker Muons 
+if len(muonCollectionTag) > 0: # use Tracker Muons
     process.Path = cms.Path(process.offlineBeamSpot * process.newmuons)
 
 process.MuonAlignmentFromReferenceInputDB.connect = cms.string("sqlite_file:%s" % inputdb)
@@ -279,14 +279,14 @@ if is_MC:
                                                        connect = cms.string(trackerconnect),
                                                        toGet = cms.VPSet(cms.PSet(record = cms.string("TrackerAlignmentRcd"), tag = cms.string(trackeralignment))))
         process.es_prefer_TrackerAlignmentInputDB = cms.ESPrefer("PoolDBESSource", "TrackerAlignmentInputDB")
-    
+
     if trackerAPEconnect != "":
         process.TrackerAlignmentErrorInputDB = cms.ESSource("PoolDBESSource",
                                                        CondDBSetup,
                                                        connect = cms.string(trackerAPEconnect),
                                                        toGet = cms.VPSet(cms.PSet(cms.PSet(record = cms.string("TrackerAlignmentErrorExtendedRcd"), tag = cms.string(trackerAPE)))))
         process.es_prefer_TrackerAlignmentErrorInputDB = cms.ESPrefer("PoolDBESSource", "TrackerAlignmentErrorInputDB")
-    
+
     if trackerBowsconnect != "":
         process.TrackerSurfaceDeformationInputDB = cms.ESSource("PoolDBESSource",
                                                        CondDBSetup,
@@ -325,3 +325,11 @@ process.looper.saveApeToDB = False
 del process.PoolDBOutputService
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string("plotting%03d.root" % jobnumber))
+
+maxEvts = process.maxEvents.input.value()
+if maxEvts > 10000 or maxEvts < 0:
+  process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+elif maxEvts > 10:
+  process.MessageLogger.cerr.FwkReport.reportEvery = maxEvts//10
+
+# print(process.dumpPython())
