@@ -6,7 +6,10 @@ import optparse
 
 from mutypes import *
 
-execfile("plotscripts.py")
+# execfile("plotscripts.py")
+exec(open("./plotscripts.py").read())
+# from plotscripts import *
+print("plotscripts.py loaded")
 
 ROOT.gROOT.SetBatch(1);
 
@@ -973,7 +976,8 @@ if not SINGLE_ITERATION:
     if os.access(fname+".root",os.F_OK):
         iter1_tfile = ROOT.TFile(fname+".root")
     if os.access(fname+"_report.py",os.F_OK):
-        execfile(fname+"_report.py")
+        # execfile(fname+"_report.py")
+        exec(open(fname+"_report.py").read())
         iter1_reports = reports
 
 fname = options.inputDir+'/'+options.iN+'/'+iNprefix
@@ -993,7 +997,8 @@ if DO_MAP or DO_SEGDIFF or DO_CURVATURE: tfilesN_plotting.append(ROOT.TFile(fnam
 if os.access(fname+".root",os.F_OK):
     iterN_tfile = ROOT.TFile(fname+".root")
 if os.access(fname+"_report.py",os.F_OK):
-    execfile(fname+"_report.py")
+    # execfile(fname+"_report.py")
+    exec(open(fname+"_report.py").read())
     iterN_reports = reports
 
 if DO_MAP:

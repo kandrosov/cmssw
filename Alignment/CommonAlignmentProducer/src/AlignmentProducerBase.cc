@@ -872,6 +872,14 @@ void AlignmentProducerBase::writeForRunRange(cond::Time_t time) {
     // Get alignments+errors, first DT - ownership taken over by writeDB(..), so no delete
     auto alignments = alignableMuon_->dtAlignments();
     auto alignmentErrors = alignableMuon_->dtAlignmentErrorsExtended();
+
+    cout<< "Muon Alignment errors ----------------------------------"<<endl;
+    for (const auto& ali : *alignmentErrors) {
+      cout << "Muon Alignment error for " << ali.rawId() << " of type " << ali.structureType() << ":\n";
+      cout << "  dx: " << ali.dx() << ", dy: " << ali.dy() << ", dz: " << ali.dz() << "\n";
+      cout << "  dalpha: " << ali.dalpha() << ", dbeta: " << ali.dbeta() << ", dgamma: " << ali.dgamma() << "\n";
+    }
+
     this->writeDB(alignments, "DTAlignmentRcd", alignmentErrors, "DTAlignmentErrorExtendedRcd", muonGlobal, time);
 
     // Get alignments+errors, now CSC - ownership taken over by writeDB(..), so no delete
