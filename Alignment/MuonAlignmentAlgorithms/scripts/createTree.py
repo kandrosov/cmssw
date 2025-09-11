@@ -33,6 +33,7 @@ NAME_TO_TITLE = {
 "map_CSCvsphi_x.png" : "map of rphi residual vs phi",
 "map_CSCvsr_dxdz.png" : "map of d(rphi)/dz residual vs r",
 "map_CSCvsr_x.png" : "map of rphi residual vs r",
+"map_CSCvsr_all_dxdz.png" : "map of d(rphi)/dz residual vs r (all)",
 "segdifphi_x_dt_csc_resid.png" : "segdiff DT-CSC in x residuals vs phi",
 "segdifphi_dt13_resid.png" : "segdiff in x residuals vs phi",
 "segdifphi_dt13_slope.png" : "segdiff in dxdz residuals vs phi",
@@ -127,16 +128,18 @@ def parseDir(dir,label,it1="",itN=""):
   files = sorted(os.listdir(dir))
   for f in files:
     if re.match(".+\.png", f):
+      # Get title from dictionary or use filename as default
+      title = NAME_TO_TITLE.get(f, f.replace('.png', '').replace('_', ' '))
       if len(it1)>0 and len(itN)>0:
         lnN = [itN,dir+'/'+f]
         dir1 = dir.replace(itN,it1)
         if not os.access(dir1+'/'+f,os.F_OK):
           print("WARNING: no ",dir1+'/'+f," file found!!!")
         ln1 = [it1,dir1+'/'+f]
-        ln = [NAME_TO_TITLE[f],dir+'/'+f,ln1,lnN]
+        ln = [title,dir+'/'+f,ln1,lnN]
         res.append(ln)
       else:
-        ln = [NAME_TO_TITLE[f],dir+'/'+f]
+        ln = [title,dir+'/'+f]
         #print ln
         res.append(ln)
   #pp.pprint(res)
