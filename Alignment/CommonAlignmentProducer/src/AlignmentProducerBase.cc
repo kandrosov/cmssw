@@ -873,12 +873,12 @@ void AlignmentProducerBase::writeForRunRange(cond::Time_t time) {
     auto alignments = alignableMuon_->dtAlignments();
     auto alignmentErrors = alignableMuon_->dtAlignmentErrorsExtended();
 
-    cout<< "Muon Alignment errors ----------------------------------"<<endl;
-    for (const auto& ali : *alignmentErrors) {
-      cout << "Muon Alignment error for " << ali.rawId() << " of type " << ali.structureType() << ":\n";
-      cout << "  dx: " << ali.dx() << ", dy: " << ali.dy() << ", dz: " << ali.dz() << "\n";
-      cout << "  dalpha: " << ali.dalpha() << ", dbeta: " << ali.dbeta() << ", dgamma: " << ali.dgamma() << "\n";
-    }
+    // std::cout<< "Muon Alignment errors ----------------------------------"<<std::endl;
+    // for (const auto& ali : *alignmentErrors) {
+    //   std::cout << "Muon Alignment error for " << ali.rawId() << " of type " << ali.structureType() << ":\n";
+    //   std::cout << "  dx: " << ali.dx() << ", dy: " << ali.dy() << ", dz: " << ali.dz() << "\n";
+    //   std::cout << "  dalpha: " << ali.dalpha() << ", dbeta: " << ali.dbeta() << ", dgamma: " << ali.dgamma() << "\n";
+    // }
 
     this->writeDB(alignments, "DTAlignmentRcd", alignmentErrors, "DTAlignmentErrorExtendedRcd", muonGlobal, time);
 

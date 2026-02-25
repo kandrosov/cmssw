@@ -157,7 +157,7 @@ void MuonResiduals6DOFrphiFitter_FCN(int &npar, double *gin, double &fval, doubl
             fitter->useRes() == MuonResidualsFitter::k1010) {
           fval += -weight * MuonResidualsFitter_logPureGaussian(residual, residpeak, residsigma);
           fval += -weight * MuonResidualsFitter_logPureGaussian(resslope, resslopepeak, resslopesigma);
-        } else if (fitter->useRes() == MuonResidualsFitter::k1100) {
+        } else if (fitter->useRes() == MuonResidualsFitter::k1100|| fitter->useRes() == MuonResidualsFitter::k1000) {
           fval += -weight * MuonResidualsFitter_logPureGaussian(residual, residpeak, residsigma);
         } else if (fitter->useRes() == MuonResidualsFitter::k0010) {
           fval += -weight * MuonResidualsFitter_logPureGaussian(resslope, resslopepeak, resslopesigma);
@@ -167,7 +167,7 @@ void MuonResiduals6DOFrphiFitter_FCN(int &npar, double *gin, double &fval, doubl
             fitter->useRes() == MuonResidualsFitter::k1010) {
           fval += -weight * MuonResidualsFitter_logPureGaussian2D(
                                 residual, resslope, residpeak, resslopepeak, residsigma, resslopesigma, alpha);
-        } else if (fitter->useRes() == MuonResidualsFitter::k1100) {
+        } else if (fitter->useRes() == MuonResidualsFitter::k1100|| fitter->useRes() == MuonResidualsFitter::k1000) {
           fval += -weight * MuonResidualsFitter_logPureGaussian(residual, residpeak, residsigma);
         } else if (fitter->useRes() == MuonResidualsFitter::k0010) {
           fval += -weight * MuonResidualsFitter_logPureGaussian(resslope, resslopepeak, resslopesigma);
@@ -264,6 +264,15 @@ bool MuonResiduals6DOFrphiFitter::fit(Alignable *ali) {
                       0.01 * resslope_std};
   double lows[11] = {0., 0., 0., 0., 0., 0., 0., 0., -1., 0., 0.};
   double highs[11] = {0., 0., 0., 0., 0., 0., 10., 0.1, 1., 0., 0.};
+  // adjust the default initial values with possible custom ones:
+  for (std::map<int, double>::iterator it = m_parNum2InitValue.begin(); it != m_parNum2InitValue.end(); ++it)
+  {
+    int parNum = it->first;
+    int idx = -1;
+    for (int i=0; i<11; ++i) if (nums[i]==parNum) {idx=i; break;}
+    assert(idx>=0);
+    starts[idx] = it->second;
+  }
 
   std::vector<int> num(nums, nums + 6);
   std::vector<std::string> name(names, names + 6);
@@ -286,7 +295,7 @@ bool MuonResiduals6DOFrphiFitter::fit(Alignable *ali) {
         idx[ni] = ni + 7;
     if (!add_alpha)
       fix(kAlpha);
-  } else if (useRes() == k1100) {
+  } else if (useRes() == k1100|| useRes() == k1000) {
     idx[ni++] = 6;
     if (add_gamma)
       idx[ni++] = 9;
@@ -298,7 +307,7 @@ bool MuonResiduals6DOFrphiFitter::fit(Alignable *ali) {
       idx[ni++] = 10;
     fix(kResidSigma);
     fix(kAlpha);
-  }
+  } 
   for (int i = 0; i < ni; i++) {
     num.push_back(nums[idx[i]]);
     name.push_back(names[idx[i]]);

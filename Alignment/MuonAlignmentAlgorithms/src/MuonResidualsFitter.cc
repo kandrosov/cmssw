@@ -867,9 +867,11 @@ void MuonResidualsFitter::fiducialCuts(unsigned int idx) {
       float phi_deg = 180 * (phi_rad) / 3.14159265;          //Angle in degree.
       //Actual cut for borders
       if (chamberId.station() == 1 && chamberId.ring() == 3)
-        Fiducial_cut = 1.7;
+        // Fiducial_cut = 1.7;
+        Fiducial_cut = 2.7;
       else
-        Fiducial_cut = 1;
+        // Fiducial_cut = 1;
+        Fiducial_cut = 2;
       if (fabs(phi_deg) > (SizeInDegree - Fiducial_cut))
         m_residuals_ok[iResidual] = false;
       //Actual cut for local Y
