@@ -1423,17 +1423,17 @@ def createPeaksProfile(the2d, rebin=1):
     if nn > 10:     # good to fit
       fr = tmp.Fit("fgaus","RNSQ")
       #print "       ", fgaus.GetParameter(1), " +- ", fgaus.GetParError(1), "   fitres = " , fr.Status() , fr.CovMatrixStatus()
-      hpeaks.SetBinContent(i/rebin+1, fgaus.GetParameter(1))
-      hpeaks.SetBinError(i/rebin+1, fgaus.GetParError(1))
+      hpeaks.SetBinContent(int(i/rebin+1), fgaus.GetParameter(1))
+      hpeaks.SetBinError(int(i/rebin+1), fgaus.GetParError(1))
       if fr.Status()==0 and fr.CovMatrixStatus()==3 : fitOk = True
     if not fitOk:
       bad_fit_bins.append(i/rebin+1)
       if nn > 1. and tmp.GetRMS() > 0: # use mean
-        hpeaks.SetBinContent(i/rebin+1, tmp.GetMean())
-        hpeaks.SetBinError(i/rebin+1, ROOT.TMath.StudentQuantile(0.841345,nn) * tmp.GetRMS() / sqrt(nn))
+        hpeaks.SetBinContent(int(i/rebin+1), tmp.GetMean())
+        hpeaks.SetBinError(int(i/rebin+1), ROOT.TMath.StudentQuantile(0.841345,nn) * tmp.GetRMS() / sqrt(nn))
       else:
-        hpeaks.SetBinContent(i/rebin+1, 0.)
-        hpeaks.SetBinError(i/rebin+1, 0.)
+        hpeaks.SetBinContent(int(i/rebin+1), 0.)
+        hpeaks.SetBinError(int(i/rebin+1), 0.)
   if len(bad_fit_bins): print("createPeaksProfile bad fit bins: ", bad_fit_bins)
   return hpeaks
 
@@ -1519,15 +1519,15 @@ def mapplot(tfiles, name, param, mode="from2d", window=10., abscissa=None, title
             tmp = the2d.ProjectionY("tmp", i+1, i + skip)
             if tmp.GetEntries() > 1:
                 #tmp.Fit("g","LNq")
-                hist.SetBinContent(i/skip+1, tmp.GetMean())
-                hist.SetBinError(i/skip+1, ROOT.TMath.StudentQuantile(0.841345,tmp.GetEntries()) * tmp.GetRMS() / sqrt(tmp.GetEntries()))
+                hist.SetBinContent(int(i/skip+1), tmp.GetMean())
+                hist.SetBinError(int(i/skip+1), ROOT.TMath.StudentQuantile(0.841345,tmp.GetEntries()) * tmp.GetRMS() / sqrt(tmp.GetEntries()))
                 #hist.SetBinError(i/skip+1, tmp.GetRMS() / sqrt(tmp.GetEntries()))
                 #hist.SetBinError(i/skip+1, f.GetParameter(2))
             else:
                 #hist.SetBinContent(i/skip+1, 2000.)
                 #hist.SetBinError(i/skip+1, 1000.)
-                hist.SetBinContent(i/skip+1, 0.)
-                hist.SetBinError(i/skip+1, 0.)
+                hist.SetBinContent(int(i/skip+1), 0.)
+                hist.SetBinError(int(i/skip+1), 0.)
 
         hpeaks = createPeaksProfile(the2d, peaksbins)
 
@@ -2315,85 +2315,85 @@ def polynomials(tfile, reports, name, twobin=True, suppressblue=False):
         chamber_x_trackdydz_fit2, chamber_y_trackdydz_fit2, chamber_dxdz_trackdydz_fit2, chamber_dydz_trackdydz_fit2
 
     chamber_x_trackx = tfile.Get(pdirPos+"_x_trackx")
-    chamber_x_trackx_fit = tfile.Get(pdirPos+"_x_trackx_fitline")
+    chamber_x_trackx_fit = tfile.Get(pdirPos+"_x_trackx_fit")
     chamber_y_trackx = tfile.Get(pdirPos+"_y_trackx")
-    chamber_y_trackx_fit = tfile.Get(pdirPos+"_y_trackx_fitline")
+    chamber_y_trackx_fit = tfile.Get(pdirPos+"_y_trackx_fit")
     chamber_dxdz_trackx = tfile.Get(pdirPos+"_dxdz_trackx")
-    chamber_dxdz_trackx_fit = tfile.Get(pdirPos+"_dxdz_trackx_fitline")
+    chamber_dxdz_trackx_fit = tfile.Get(pdirPos+"_dxdz_trackx_fit")
     chamber_dydz_trackx = tfile.Get(pdirPos+"_dydz_trackx")
-    chamber_dydz_trackx_fit = tfile.Get(pdirPos+"_dydz_trackx_fitline")
-    chamber_x_trackx_fit2 = tfile.Get(pdirNeg+"_x_trackx_fitline")
-    chamber_y_trackx_fit2 = tfile.Get(pdirNeg+"_y_trackx_fitline")
-    chamber_dxdz_trackx_fit2 = tfile.Get(pdirNeg+"_dxdz_trackx_fitline")
-    chamber_dydz_trackx_fit2 = tfile.Get(pdirNeg+"_dydz_trackx_fitline")
+    chamber_dydz_trackx_fit = tfile.Get(pdirPos+"_dydz_trackx_fit")
+    chamber_x_trackx_fit2 = tfile.Get(pdirNeg+"_x_trackx_fit")
+    chamber_y_trackx_fit2 = tfile.Get(pdirNeg+"_y_trackx_fit")
+    chamber_dxdz_trackx_fit2 = tfile.Get(pdirNeg+"_dxdz_trackx_fit")
+    chamber_dydz_trackx_fit2 = tfile.Get(pdirNeg+"_dydz_trackx_fit")
 
     chamber_x_tracky = tfile.Get(pdirPos+"_x_tracky")
-    chamber_x_tracky_fit = tfile.Get(pdirPos+"_x_tracky_fitline")
+    chamber_x_tracky_fit = tfile.Get(pdirPos+"_x_tracky_fit")
     chamber_y_tracky = tfile.Get(pdirPos+"_y_tracky")
-    chamber_y_tracky_fit = tfile.Get(pdirPos+"_y_tracky_fitline")
+    chamber_y_tracky_fit = tfile.Get(pdirPos+"_y_tracky_fit")
     chamber_dxdz_tracky = tfile.Get(pdirPos+"_dxdz_tracky")
-    chamber_dxdz_tracky_fit = tfile.Get(pdirPos+"_dxdz_tracky_fitline")
+    chamber_dxdz_tracky_fit = tfile.Get(pdirPos+"_dxdz_tracky_fit")
     chamber_dydz_tracky = tfile.Get(pdirPos+"_dydz_tracky")
-    chamber_dydz_tracky_fit = tfile.Get(pdirPos+"_dydz_tracky_fitline")
-    chamber_x_tracky_fit2 = tfile.Get(pdirNeg+"_x_tracky_fitline")
-    chamber_y_tracky_fit2 = tfile.Get(pdirNeg+"_y_tracky_fitline")
-    chamber_dxdz_tracky_fit2 = tfile.Get(pdirNeg+"_dxdz_tracky_fitline")
-    chamber_dydz_tracky_fit2 = tfile.Get(pdirNeg+"_dydz_tracky_fitline")
+    chamber_dydz_tracky_fit = tfile.Get(pdirPos+"_dydz_tracky_fit")
+    chamber_x_tracky_fit2 = tfile.Get(pdirNeg+"_x_tracky_fit")
+    chamber_y_tracky_fit2 = tfile.Get(pdirNeg+"_y_tracky_fit")
+    chamber_dxdz_tracky_fit2 = tfile.Get(pdirNeg+"_dxdz_tracky_fit")
+    chamber_dydz_tracky_fit2 = tfile.Get(pdirNeg+"_dydz_tracky_fit")
 
     chamber_x_trackdxdz = tfile.Get(pdirPos+"_x_trackdxdz")
-    chamber_x_trackdxdz_fit = tfile.Get(pdirPos+"_x_trackdxdz_fitline")
+    chamber_x_trackdxdz_fit = tfile.Get(pdirPos+"_x_trackdxdz_fit")
     chamber_y_trackdxdz = tfile.Get(pdirPos+"_y_trackdxdz")
-    chamber_y_trackdxdz_fit = tfile.Get(pdirPos+"_y_trackdxdz_fitline")
+    chamber_y_trackdxdz_fit = tfile.Get(pdirPos+"_y_trackdxdz_fit")
     chamber_dxdz_trackdxdz = tfile.Get(pdirPos+"_dxdz_trackdxdz")
-    chamber_dxdz_trackdxdz_fit = tfile.Get(pdirPos+"_dxdz_trackdxdz_fitline")
+    chamber_dxdz_trackdxdz_fit = tfile.Get(pdirPos+"_dxdz_trackdxdz_fit")
     chamber_dydz_trackdxdz = tfile.Get(pdirPos+"_dydz_trackdxdz")
-    chamber_dydz_trackdxdz_fit = tfile.Get(pdirPos+"_dydz_trackdxdz_fitline")
-    chamber_x_trackdxdz_fit2 = tfile.Get(pdirNeg+"_x_trackdxdz_fitline")
-    chamber_y_trackdxdz_fit2 = tfile.Get(pdirNeg+"_y_trackdxdz_fitline")
-    chamber_dxdz_trackdxdz_fit2 = tfile.Get(pdirNeg+"_dxdz_trackdxdz_fitline")
-    chamber_dydz_trackdxdz_fit2 = tfile.Get(pdirNeg+"_dydz_trackdxdz_fitline")
+    chamber_dydz_trackdxdz_fit = tfile.Get(pdirPos+"_dydz_trackdxdz_fit")
+    chamber_x_trackdxdz_fit2 = tfile.Get(pdirNeg+"_x_trackdxdz_fit")
+    chamber_y_trackdxdz_fit2 = tfile.Get(pdirNeg+"_y_trackdxdz_fit")
+    chamber_dxdz_trackdxdz_fit2 = tfile.Get(pdirNeg+"_dxdz_trackdxdz_fit")
+    chamber_dydz_trackdxdz_fit2 = tfile.Get(pdirNeg+"_dydz_trackdxdz_fit")
 
     chamber_x_trackdydz = tfile.Get(pdirPos+"_x_trackdydz")
-    chamber_x_trackdydz_fit = tfile.Get(pdirPos+"_x_trackdydz_fitline")
+    chamber_x_trackdydz_fit = tfile.Get(pdirPos+"_x_trackdydz_fit")
     chamber_y_trackdydz = tfile.Get(pdirPos+"_y_trackdydz")
-    chamber_y_trackdydz_fit = tfile.Get(pdirPos+"_y_trackdydz_fitline")
+    chamber_y_trackdydz_fit = tfile.Get(pdirPos+"_y_trackdydz_fit")
     chamber_dxdz_trackdydz = tfile.Get(pdirPos+"_dxdz_trackdydz")
-    chamber_dxdz_trackdydz_fit = tfile.Get(pdirPos+"_dxdz_trackdydz_fitline")
+    chamber_dxdz_trackdydz_fit = tfile.Get(pdirPos+"_dxdz_trackdydz_fit")
     chamber_dydz_trackdydz = tfile.Get(pdirPos+"_dydz_trackdydz")
-    chamber_dydz_trackdydz_fit = tfile.Get(pdirPos+"_dydz_trackdydz_fitline")
-    chamber_x_trackdydz_fit2 = tfile.Get(pdirNeg+"_x_trackdydz_fitline")
-    chamber_y_trackdydz_fit2 = tfile.Get(pdirNeg+"_y_trackdydz_fitline")
-    chamber_dxdz_trackdydz_fit2 = tfile.Get(pdirNeg+"_dxdz_trackdydz_fitline")
-    chamber_dydz_trackdydz_fit2 = tfile.Get(pdirNeg+"_dydz_trackdydz_fitline")
+    chamber_dydz_trackdydz_fit = tfile.Get(pdirPos+"_dydz_trackdydz_fit")
+    chamber_x_trackdydz_fit2 = tfile.Get(pdirNeg+"_x_trackdydz_fit")
+    chamber_y_trackdydz_fit2 = tfile.Get(pdirNeg+"_y_trackdydz_fit")
+    chamber_dxdz_trackdydz_fit2 = tfile.Get(pdirNeg+"_dxdz_trackdydz_fit")
+    chamber_dydz_trackdydz_fit2 = tfile.Get(pdirNeg+"_dydz_trackdydz_fit")
 
     if not chamber_x_trackx:
         chamber_x_trackx = tfile.Get(pdirPos+"_residual_trackx")
-        chamber_x_trackx_fit = tfile.Get(pdirPos+"_residual_trackx_fitline")
+        chamber_x_trackx_fit = tfile.Get(pdirPos+"_residual_trackx_fit")
         chamber_dxdz_trackx = tfile.Get(pdirPos+"_resslope_trackx")
-        chamber_dxdz_trackx_fit = tfile.Get(pdirPos+"_resslope_trackx_fitline")
-        chamber_x_trackx_fit2 = tfile.Get(pdirNeg+"_residual_trackx_fitline")
-        chamber_dxdz_trackx_fit2 = tfile.Get(pdirNeg+"_resslope_trackx_fitline")
+        chamber_dxdz_trackx_fit = tfile.Get(pdirPos+"_resslope_trackx_fit")
+        chamber_x_trackx_fit2 = tfile.Get(pdirNeg+"_residual_trackx_fit")
+        chamber_dxdz_trackx_fit2 = tfile.Get(pdirNeg+"_resslope_trackx_fit")
 
         chamber_x_tracky = tfile.Get(pdirPos+"_residual_tracky")
-        chamber_x_tracky_fit = tfile.Get(pdirPos+"_residual_tracky_fitline")
+        chamber_x_tracky_fit = tfile.Get(pdirPos+"_residual_tracky_fit")
         chamber_dxdz_tracky = tfile.Get(pdirPos+"_resslope_tracky")
-        chamber_dxdz_tracky_fit = tfile.Get(pdirPos+"_resslope_tracky_fitline")
-        chamber_x_tracky_fit2 = tfile.Get(pdirNeg+"_residual_tracky_fitline")
-        chamber_dxdz_tracky_fit2 = tfile.Get(pdirNeg+"_resslope_tracky_fitline")
+        chamber_dxdz_tracky_fit = tfile.Get(pdirPos+"_resslope_tracky_fit")
+        chamber_x_tracky_fit2 = tfile.Get(pdirNeg+"_residual_tracky_fit")
+        chamber_dxdz_tracky_fit2 = tfile.Get(pdirNeg+"_resslope_tracky_fit")
 
         chamber_x_trackdxdz = tfile.Get(pdirPos+"_residual_trackdxdz")
-        chamber_x_trackdxdz_fit = tfile.Get(pdirPos+"_residual_trackdxdz_fitline")
+        chamber_x_trackdxdz_fit = tfile.Get(pdirPos+"_residual_trackdxdz_fit")
         chamber_dxdz_trackdxdz = tfile.Get(pdirPos+"_resslope_trackdxdz")
-        chamber_dxdz_trackdxdz_fit = tfile.Get(pdirPos+"_resslope_trackdxdz_fitline")
-        chamber_x_trackdxdz_fit2 = tfile.Get(pdirNeg+"_residual_trackdxdz_fitline")
-        chamber_dxdz_trackdxdz_fit2 = tfile.Get(pdirNeg+"_resslope_trackdxdz_fitline")
+        chamber_dxdz_trackdxdz_fit = tfile.Get(pdirPos+"_resslope_trackdxdz_fit")
+        chamber_x_trackdxdz_fit2 = tfile.Get(pdirNeg+"_residual_trackdxdz_fit")
+        chamber_dxdz_trackdxdz_fit2 = tfile.Get(pdirNeg+"_resslope_trackdxdz_fit")
 
         chamber_x_trackdydz = tfile.Get(pdirPos+"_residual_trackdydz")
-        chamber_x_trackdydz_fit = tfile.Get(pdirPos+"_residual_trackdydz_fitline")
+        chamber_x_trackdydz_fit = tfile.Get(pdirPos+"_residual_trackdydz_fit")
         chamber_dxdz_trackdydz = tfile.Get(pdirPos+"_resslope_trackdydz")
-        chamber_dxdz_trackdydz_fit = tfile.Get(pdirPos+"_resslope_trackdydz_fitline")
-        chamber_x_trackdydz_fit2 = tfile.Get(pdirNeg+"_residual_trackdydz_fitline")
-        chamber_dxdz_trackdydz_fit2 = tfile.Get(pdirNeg+"_resslope_trackdydz_fitline")
+        chamber_dxdz_trackdydz_fit = tfile.Get(pdirPos+"_resslope_trackdydz_fit")
+        chamber_x_trackdydz_fit2 = tfile.Get(pdirNeg+"_residual_trackdydz_fit")
+        chamber_dxdz_trackdydz_fit2 = tfile.Get(pdirNeg+"_resslope_trackdydz_fit")
 
     if not chamber_x_trackx:
         print("Can't find neither "+pdirPos+"_residual  nor "+pdirPos+"_residual_trackx")
@@ -2489,7 +2489,7 @@ def polynomials(tfile, reports, name, twobin=True, suppressblue=False):
                    h.GetBinContent(i) + h.GetBinError(i) > -10.:
                     if not trackdxdz_minimum or trackdxdz_minimum > h.GetBinCenter(i): 
                         trackdxdz_minimum = h.GetBinCenter(i)
-                    if trackdxdz_maximum < h.GetBinCenter(i): 
+                    if not trackdxdz_maximum or trackdxdz_maximum < h.GetBinCenter(i): 
                         trackdxdz_maximum = h.GetBinCenter(i)
     if not not trackdxdz_minimum and not not trackdxdz_maximum:
         for h in chamber_x_trackdxdz, chamber_y_trackdxdz, chamber_dxdz_trackdxdz, chamber_dydz_trackdxdz:
@@ -2504,7 +2504,7 @@ def polynomials(tfile, reports, name, twobin=True, suppressblue=False):
                    h.GetBinContent(i) + h.GetBinError(i) > -10.:
                     if not trackdydz_minimum or trackdydz_minimum > h.GetBinCenter(i): 
                         trackdydz_minimum = h.GetBinCenter(i)
-                    if trackdydz_maximum < h.GetBinCenter(i): 
+                    if not trackdydz_maximum or trackdydz_maximum < h.GetBinCenter(i): 
                         trackdydz_maximum = h.GetBinCenter(i)
     if not not trackdydz_minimum and not not trackdydz_maximum:
         for h in chamber_x_trackdydz, chamber_y_trackdydz, chamber_dxdz_trackdydz, chamber_dydz_trackdydz:
@@ -3044,9 +3044,26 @@ def segdiff(tfiles, component, pair, **args):
     f.SetParNames("Constant", "Mean", "Sigma")
     fit3 = tmpneg.Fit("gausR", "qRS")
 
-    fit1ok = fit1.Status()==0 and fit1.CovMatrixStatus()==3
-    fit2ok = fit2.Status()==0 and fit2.CovMatrixStatus()==3
-    fit3ok = fit3.Status()==0 and fit3.CovMatrixStatus()==3
+    # Safe check for fit1 to handle null pointer issues
+    fit1ok = False
+    try:
+        fit1ok = hasattr(fit1, "Status") and fit1.Status()==0 and fit1.CovMatrixStatus()==3
+    except ReferenceError:
+        fit1ok = False
+    
+    # Safe check for fit2 to handle null pointer issues  
+    fit2ok = False
+    try:
+        fit2ok = fit2 is not None and fit2.Status()==0 and fit2.CovMatrixStatus()==3
+    except ReferenceError:
+        fit2ok = False
+        
+    # Safe check for fit3 to handle null pointer issues
+    fit3ok = False
+    try:
+        fit3ok = fit3 is not None and fit3.Status()==0 and fit3.CovMatrixStatus()==3
+    except ReferenceError:
+        fit3ok = False
 
     fitresult1 = None, None
     if fit1ok:
