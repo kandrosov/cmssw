@@ -250,15 +250,17 @@ int CSCGEMMatcher::matchedClusterDistES(const CSCCLCTDigi& clct,
   int cl_es = isME1a ? cl.getKeyStripME1a(8, isLayer2) : cl.getKeyStrip(8, isLayer2);
 
   // Apply GEM alignment correction: corrects GEM position for chamber misalignment
-  const unsigned roll = isLayer2 ? cl.roll2() : cl.roll1();
+  const unsigned roll = isLayer2 ? (unsigned)cl.roll2() : (unsigned)cl.roll1();
+  const unsigned layer = isLayer2 ? 2 : 1;
+  const unsigned pad = isLayer2 ? (unsigned)cl.layer2_pad() : (unsigned)cl.layer1_pad();
   if (station_ == 1) {
     cl_es += (endcap_ == 1)
-                 ? lookupTableME11ILT->GEM_align_corr_es_ME11_positive_endcap(chamber_, roll)
-                 : lookupTableME11ILT->GEM_align_corr_es_ME11_negative_endcap(chamber_, roll);
+                 ? lookupTableME11ILT->GEM_align_corr_es_ME11_positive_endcap(chamber_, roll, layer, pad)
+                 : lookupTableME11ILT->GEM_align_corr_es_ME11_negative_endcap(chamber_, roll, layer, pad);
   } else if (station_ == 2) {
     cl_es += (endcap_ == 1)
-                 ? lookupTableME21ILT->GEM_align_corr_es_ME21_positive_endcap(chamber_, roll)
-                 : lookupTableME21ILT->GEM_align_corr_es_ME21_negative_endcap(chamber_, roll);
+                 ? lookupTableME21ILT->GEM_align_corr_es_ME21_positive_endcap(chamber_, roll, layer, pad)
+                 : lookupTableME21ILT->GEM_align_corr_es_ME21_negative_endcap(chamber_, roll, layer, pad);
   }
 
   int eighthStripDiff = cl_es - clct.getKeyStrip(8);
