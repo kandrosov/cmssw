@@ -2,6 +2,7 @@
 
 import re,os,sys,shutil
 import optparse
+from past.builtins import execfile
 
 from mutypes import *
 
