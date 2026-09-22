@@ -1423,17 +1423,17 @@ def createPeaksProfile(the2d, rebin=1):
     if nn > 10:     # good to fit
       fr = tmp.Fit("fgaus","RNSQ")
       #print "       ", fgaus.GetParameter(1), " +- ", fgaus.GetParError(1), "   fitres = " , fr.Status() , fr.CovMatrixStatus()
-      hpeaks.SetBinContent(i/rebin+1, fgaus.GetParameter(1))
-      hpeaks.SetBinError(i/rebin+1, fgaus.GetParError(1))
+      hpeaks.SetBinContent(i//rebin+1, fgaus.GetParameter(1))
+      hpeaks.SetBinError(i//rebin+1, fgaus.GetParError(1))
       if fr.Status()==0 and fr.CovMatrixStatus()==3 : fitOk = True
     if not fitOk:
-      bad_fit_bins.append(i/rebin+1)
+      bad_fit_bins.append(i//rebin+1)
       if nn > 1. and tmp.GetRMS() > 0: # use mean
-        hpeaks.SetBinContent(i/rebin+1, tmp.GetMean())
-        hpeaks.SetBinError(i/rebin+1, ROOT.TMath.StudentQuantile(0.841345,nn) * tmp.GetRMS() / sqrt(nn))
+        hpeaks.SetBinContent(i//rebin+1, tmp.GetMean())
+        hpeaks.SetBinError(i//rebin+1, ROOT.TMath.StudentQuantile(0.841345,nn) * tmp.GetRMS() / sqrt(nn))
       else:
-        hpeaks.SetBinContent(i/rebin+1, 0.)
-        hpeaks.SetBinError(i/rebin+1, 0.)
+        hpeaks.SetBinContent(i//rebin+1, 0.)
+        hpeaks.SetBinError(i//rebin+1, 0.)
   if len(bad_fit_bins): print("createPeaksProfile bad fit bins: ", bad_fit_bins)
   return hpeaks
 
@@ -1519,15 +1519,15 @@ def mapplot(tfiles, name, param, mode="from2d", window=10., abscissa=None, title
             tmp = the2d.ProjectionY("tmp", i+1, i + skip)
             if tmp.GetEntries() > 1:
                 #tmp.Fit("g","LNq")
-                hist.SetBinContent(i/skip+1, tmp.GetMean())
-                hist.SetBinError(i/skip+1, ROOT.TMath.StudentQuantile(0.841345,tmp.GetEntries()) * tmp.GetRMS() / sqrt(tmp.GetEntries()))
-                #hist.SetBinError(i/skip+1, tmp.GetRMS() / sqrt(tmp.GetEntries()))
-                #hist.SetBinError(i/skip+1, f.GetParameter(2))
+                hist.SetBinContent(i//skip+1, tmp.GetMean())
+                hist.SetBinError(i//skip+1, ROOT.TMath.StudentQuantile(0.841345,tmp.GetEntries()) * tmp.GetRMS() / sqrt(tmp.GetEntries()))
+                #hist.SetBinError(i//skip+1, tmp.GetRMS() / sqrt(tmp.GetEntries()))
+                #hist.SetBinError(i//skip+1, f.GetParameter(2))
             else:
-                #hist.SetBinContent(i/skip+1, 2000.)
-                #hist.SetBinError(i/skip+1, 1000.)
-                hist.SetBinContent(i/skip+1, 0.)
-                hist.SetBinError(i/skip+1, 0.)
+                #hist.SetBinContent(i//skip+1, 2000.)
+                #hist.SetBinError(i//skip+1, 1000.)
+                hist.SetBinContent(i//skip+1, 0.)
+                hist.SetBinError(i//skip+1, 0.)
 
         hpeaks = createPeaksProfile(the2d, peaksbins)
 
@@ -1857,14 +1857,14 @@ def curvatureplot(tfiles, name, param, mode="from2d", window=15., widebins=False
         for i in range(0, int(prof.GetNbinsX()), skip):
             tmp = hist2d.ProjectionY("tmp", i+1, i + skip)
             if tmp.GetEntries() > 1:
-                hist.SetBinContent(i/skip+1, tmp.GetMean())
-                hist.SetBinError(i/skip+1, ROOT.TMath.StudentQuantile(0.841345,tmp.GetEntries()) * tmp.GetRMS() / sqrt(tmp.GetEntries()))
-                #hist.SetBinError(i/skip+1, tmp.GetRMS() / sqrt(tmp.GetEntries()))
+                hist.SetBinContent(i//skip+1, tmp.GetMean())
+                hist.SetBinError(i//skip+1, ROOT.TMath.StudentQuantile(0.841345,tmp.GetEntries()) * tmp.GetRMS() / sqrt(tmp.GetEntries()))
+                #hist.SetBinError(i//skip+1, tmp.GetRMS() / sqrt(tmp.GetEntries()))
             else:
-                #hist.SetBinContent(i/skip+1, 2000.)
-                #hist.SetBinError(i/skip+1, 1000.)
-                hist.SetBinContent(i/skip+1, 0.)
-                hist.SetBinError(i/skip+1, 0.)
+                #hist.SetBinContent(i//skip+1, 2000.)
+                #hist.SetBinError(i//skip+1, 1000.)
+                hist.SetBinContent(i//skip+1, 0.)
+                hist.SetBinError(i//skip+1, 0.)
 
         hpeaks = createPeaksProfile(hist2d, skip)
 
@@ -2487,9 +2487,9 @@ def polynomials(tfile, reports, name, twobin=True, suppressblue=False):
             for i in range(1, h.GetNbinsX()+1):
                 if h.GetBinError(i) > 0.01 and h.GetBinContent(i) - h.GetBinError(i) < 10. and \
                    h.GetBinContent(i) + h.GetBinError(i) > -10.:
-                    if not trackdxdz_minimum or trackdxdz_minimum > h.GetBinCenter(i): 
+                    if not trackdxdz_minimum or trackdxdz_minimum > h.GetBinCenter(i):
                         trackdxdz_minimum = h.GetBinCenter(i)
-                    if trackdxdz_maximum < h.GetBinCenter(i): 
+                    if not trackdxdz_maximum or trackdxdz_maximum < h.GetBinCenter(i):
                         trackdxdz_maximum = h.GetBinCenter(i)
     if not not trackdxdz_minimum and not not trackdxdz_maximum:
         for h in chamber_x_trackdxdz, chamber_y_trackdxdz, chamber_dxdz_trackdxdz, chamber_dydz_trackdxdz:
@@ -2502,9 +2502,9 @@ def polynomials(tfile, reports, name, twobin=True, suppressblue=False):
             for i in range(1, h.GetNbinsX()+1):
                 if h.GetBinError(i) > 0.01 and h.GetBinContent(i) - h.GetBinError(i) < 10. and \
                    h.GetBinContent(i) + h.GetBinError(i) > -10.:
-                    if not trackdydz_minimum or trackdydz_minimum > h.GetBinCenter(i): 
+                    if not trackdydz_minimum or trackdydz_minimum > h.GetBinCenter(i):
                         trackdydz_minimum = h.GetBinCenter(i)
-                    if trackdydz_maximum < h.GetBinCenter(i): 
+                    if not trackdydz_maximum or trackdydz_maximum < h.GetBinCenter(i):
                         trackdydz_maximum = h.GetBinCenter(i)
     if not not trackdydz_minimum and not not trackdydz_maximum:
         for h in chamber_x_trackdydz, chamber_y_trackdydz, chamber_dxdz_trackdydz, chamber_dydz_trackdydz:

@@ -875,7 +875,7 @@ void MuonResidualsFitter::fiducialCuts(unsigned int idx) {
         Fiducial_cut = 2.7;
       else
         // Fiducial_cut = 1;
-        Fiducial_cut = 2;
+        Fiducial_cut = 2.7;
       if (fabs(phi_deg) > (SizeInDegree - Fiducial_cut))
         m_residuals_ok[iResidual] = false;
       //Actual cut for local Y
